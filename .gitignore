@@ -1,0 +1,5 @@
+# Local-only context with FTP credentials — never commit
+MASTERCONTEXT.md
+
+# macOS
+.DS_Store

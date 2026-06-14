@@ -1,0 +1,354 @@
+@font-face {
+    font-family: 'LobbyCard';
+    src: url('LobbyCardJNL.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+:root {
+    --bg-color: #e2c898;
+    --text-color: #391910;
+    --accent-color: #391910;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'LobbyCard', monospace;
+    overflow-x: hidden;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+}
+
+body.landing-page {
+    background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('SCOTT_LONDON_0733-1-2.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-color: var(--bg-color);
+}
+
+body.donate-page {
+    background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('VOSS_AMBIENCE-1.jpg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
+    background-color: var(--bg-color);
+}
+
+body.stay-in-touch-page {
+    background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('SLABS_KDEZ-4.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-color: var(--bg-color);
+}
+
+.container {
+    display: flex;
+    width: 100%;
+    max-width: 1200px;
+    padding: 2rem;
+    position: relative;
+    min-height: 100vh;
+    align-items: center;
+}
+
+/* --- Chaotic Menu --- */
+.chaotic-menu {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 50%;
+    gap: 1.5rem;
+    padding: 2.5rem 0;
+}
+
+.menu-item {
+    text-decoration: none;
+    color: var(--text-color);
+    display: inline-block;
+    position: relative;
+    line-height: 0.8;
+    letter-spacing: -2px;
+    transition: transform 0.2s ease, text-shadow 0.2s ease;
+}
+
+.menu-item:hover {
+    transform: scale(1.05) rotate(-2deg);
+}
+
+.size-l {
+    font-size: 2rem;
+}
+
+.size-xl {
+    font-size: 3.5rem;
+}
+
+.size-m {
+    font-size: 1.8rem;
+    line-height: 0.9;
+}
+
+.offset-1 {
+    transform: translateX(10px) rotate(-1deg);
+}
+
+.offset-2 {
+    transform: translateX(-15px) translateY(-10px);
+    margin-top: 2rem;
+}
+
+.offset-3 {
+    transform: translateX(5px) translateY(10px) rotate(1deg);
+}
+
+/* Lines going through text randomly */
+.has-line::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -20px;
+    right: -40px;
+    height: 2px;
+    background-color: var(--text-color);
+    opacity: 1;
+    transform: rotate(1deg);
+    z-index: -1;
+    filter: url(#rough-edge); /* For later refinement if needed */
+}
+
+.has-line-bottom::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: -10px;
+    right: -20px;
+    height: 2px;
+    background-color: var(--text-color);
+    opacity: 1;
+    transform: rotate(-1deg);
+}
+
+.has-lines-tb::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -30px;
+    right: -10px;
+    height: 2px;
+    background-color: var(--text-color);
+    opacity: 1;
+    transform: rotate(1deg);
+}
+
+.has-lines-tb::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: -10px;
+    right: -20px;
+    height: 2px;
+    background-color: var(--text-color);
+    opacity: 1;
+    transform: rotate(-0.5deg);
+}
+
+/* --- Content Area --- */
+.content-area {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+    width: 50%;
+    position: relative;
+    padding-right: 4rem;
+}
+
+.hero-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-top: 10rem;
+    position: relative;
+}
+
+.text-content {
+    font-family: 'Courier Prime', monospace;
+    font-size: 1rem;
+    max-width: 600px;
+    margin-top: 2rem;
+    line-height: 1.6;
+    background: rgba(226, 200, 152, 1);
+    padding: 2rem;
+    border: 2px solid var(--text-color);
+}
+
+.text-content p {
+    margin-bottom: 1rem;
+}
+
+.text-content ul {
+    margin-left: 2rem;
+    margin-bottom: 1rem;
+}
+
+.yellow-scratch {
+    color: var(--accent-color);
+    font-size: 6rem;
+    letter-spacing: -3px;
+    transform: translateY(20px) translateX(-20px) rotate(-3deg);
+    z-index: 2;
+}
+
+.black-scratch {
+    color: var(--text-color);
+    font-size: 8rem;
+    letter-spacing: -5px;
+    z-index: 1;
+}
+
+
+
+.content-wrapper {
+    display: flex;
+    width: 100%;
+    align-items: stretch;
+}
+
+.player-content {
+    margin-top: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Media Query for Mobile */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+        padding-top: 6rem;
+    }
+    .content-wrapper {
+        flex-direction: column;
+        gap: 2rem;
+    }
+    .chaotic-menu {
+        width: 100%;
+        align-items: center;
+        gap: 1rem;
+    }
+    .content-area {
+        width: 100%;
+        align-items: center;
+        margin-top: 2rem;
+        padding-right: 0;
+    }
+    .hero-text {
+        align-items: center;
+        margin-top: 2rem;
+    }
+    .text-content {
+        padding: 1.5rem;
+        font-size: 1rem;
+        margin-top: 1rem;
+    }
+    .yellow-scratch {
+        font-size: 4rem;
+        transform: translateY(10px) translateX(-10px) rotate(-3deg);
+    }
+    .black-scratch {
+        font-size: 5rem;
+    }
+    
+    /* Make menu smaller on mobile */
+    .size-l { font-size: 1.6rem; }
+    .size-xl { font-size: 2.8rem; }
+    .size-m { font-size: 1.4rem; }
+    
+    .offset-2 { margin-top: 1rem; }
+
+    /* Shrink the absolute logo on mobile */
+    a[href="index.html"] {
+        top: 1rem !important;
+        left: 1rem !important;
+    }
+    a[href="index.html"] img {
+        max-width: 140px !important;
+    }
+    
+    /* Donate Page Buttons */
+    .form-style-btn {
+        font-size: 2rem !important; /* Scale down slightly on mobile */
+    }
+}
+/* --- Global Utilities --- */
+.form-style-btn:hover {
+    transform: scale(1.05) !important;
+}
+
+/* --- MailerLite Custom Styling --- */
+.ml-embedded, .ml-embedded form, .ml-embedded div, .ml-embedded *,
+[id^="mlb2-"], [id^="mlb2-"] *, .ml-form-embedContainer, .ml-form-align-center, .ml-form-embedWrapper {
+    background-color: transparent !important;
+    color: var(--text-color) !important;
+    font-family: 'Courier Prime', monospace !important;
+}
+
+.ml-embedded h1, .ml-embedded h2, .ml-embedded h3, .ml-embedded h4, .ml-embedded p, [id^="mlb2-"] h1, [id^="mlb2-"] h2, [id^="mlb2-"] h3, [id^="mlb2-"] h4, [id^="mlb2-"] p {
+    display: none !important;
+}
+
+.ml-embedded .ml-form-embedWrapper {
+    padding: 0 !important;
+}
+
+.ml-embedded form {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+    max-width: 100% !important;
+}
+
+.ml-embedded input[type="email"], 
+.ml-embedded input[type="text"] {
+    padding: 1rem !important;
+    font-family: 'Courier Prime', monospace !important;
+    border: 2px solid var(--text-color) !important;
+    background: var(--bg-color) !important;
+    font-size: 1.25rem !important;
+    color: var(--text-color) !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.ml-embedded button {
+    padding: 1rem !important;
+    font-family: 'LobbyCard', monospace !important;
+    font-size: 2.5rem !important;
+    border: 2px solid var(--text-color) !important;
+    background: var(--text-color) !important;
+    color: var(--bg-color) !important;
+    cursor: pointer !important;
+    transition: transform 0.2s ease !important;
+    border-radius: 0 !important;
+    margin-top: 1rem !important;
+    width: 100% !important;
+}
+
+.ml-embedded button:hover {
+    transform: scale(1.05) !important;
+}
