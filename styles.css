@@ -142,20 +142,6 @@ body.stay-in-touch-page {
     padding: 2.5rem 0;
 }
 
-/* Inner pages place the nav directly in .container (homepage wraps it in
-   .content-wrapper, so this doesn't match there). Pin it to the viewport's
-   vertical center so it stays put even when page content is taller than the
-   viewport (e.g. the About page) instead of drifting down with the content.
-   Desktop only — the mobile layout stacks the nav. */
-@media (min-width: 769px) {
-    .container > .chaotic-menu {
-        align-self: flex-start;
-        height: 100vh;
-        position: sticky; /* stay pinned while the page scrolls */
-        top: 0;
-    }
-}
-
 .menu-item {
     text-decoration: none;
     color: var(--text-color);
@@ -259,30 +245,52 @@ body.stay-in-touch-page {
     margin-top: 5rem;
 }
 
-/* Every page (all now share the same structure — nav + content-area directly in
-   .container): lift the heading to the top and drop the box to ~viewport center
-   (50vh minus half the box height), so the heading-to-box gap matches across all
-   pages including the homepage player. The heading is absolutely positioned so it
-   never pushes the box, and kept to one line so blocks are equal height.
-   Desktop only — mobile keeps its centered, stacked layout. */
+/* Desktop layout — 2-column grid for consistency across every page:
+   - hero text: top of the RIGHT column (row 1)
+   - main nav:  LEFT column, 2rem below the hero (row 2)
+   - content box: RIGHT column, its top 1rem above the nav's top (row 2)
+   Row 1 auto-sizes to the hero, so the nav and box land at the same positions
+   relative to the hero on every page. */
 @media (min-width: 769px) {
-    .container > .content-area:has(.hero-text) {
-        align-self: stretch;
-        justify-content: flex-start;
-        position: relative;
+    .container {
+        display: grid;
+        grid-template-columns: 1fr calc(600px + 4rem); /* right column fits a fixed 600px box (+ its 4rem padding) */
+        align-content: start;
+        top: 0; /* override the base shift */
+        padding-top: 10.5rem; /* begin below the logo (top 2rem + ~125px tall) */
     }
-    .container > .content-area:has(.hero-text) .hero-text {
-        position: absolute;
-        top: 3rem;
-        right: 4rem;
-        margin-top: 0;
+    .container > .hero-text {
+        grid-column: 2;
+        grid-row: 1;
+        align-items: flex-end;
+        margin: 0;
+        padding-right: 4rem; /* align the heading's right edge with the box */
     }
-    .container > .content-area:has(.hero-text) .text-content {
-        margin-top: calc(50vh - 141px); /* begin at the homepage player box's top */
+    .container > .chaotic-menu {
+        grid-column: 1;
+        grid-row: 2;
+        margin-top: 2rem;   /* nav sits 2rem below the hero */
+        width: auto;
+        height: auto;
+        align-self: start;
+    }
+    .container > .content-area {
+        grid-column: 2;
+        grid-row: 2;
+        margin-top: 1rem;   /* box top 1rem above the nav's top */
+        width: auto;
+        align-self: start;
+    }
+    .content-area .player-content {
+        margin-top: 2rem;   /* match the text boxes on the other pages (beats base .player-content) */
+    }
+    .content-area .text-content {
+        width: 600px;       /* fixed 600px; never scales below it on desktop */
+        max-width: 600px;
     }
     .yellow-scratch,
     .black-scratch {
-        white-space: nowrap; /* one line so the heading blocks are equal height */
+        white-space: nowrap; /* one line so the hero blocks are equal height */
     }
 }
 
@@ -363,7 +371,7 @@ body.stay-in-touch-page {
     flex: 0 0 auto; /* never shrink in a flex row, so it stays a perfect circle */
     border-radius: 50%;
     border: 3px solid var(--text-color);
-    background: transparent;
+    background: var(--text-color); /* filled */
     cursor: pointer;
     padding: 0;
     display: flex;
@@ -386,7 +394,7 @@ body.stay-in-touch-page {
 
 .radio-icon polygon,
 .radio-icon rect {
-    fill: var(--text-color);
+    fill: var(--bg-color); /* golden icon on the filled button */
 }
 
 .icon-pause { display: none; }
@@ -477,9 +485,10 @@ body.stay-in-touch-page {
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 0.6rem 1.1rem;
-    background: rgba(226, 200, 152, 0.92);
-    border: 2px solid var(--text-color);
+    height: 125px; /* = the 250px desktop logo's height, so it centers vertically with the logo */
+    padding: 0;
+    background: transparent;
+    border: 0;
 }
 
 #miniPlayer.is-hidden {
@@ -554,19 +563,12 @@ body.stay-in-touch-page {
         order: 1;
     }
 
-    /* Player on mobile: filled button with a golden play icon, and a frameless,
-       background-less box. */
+    /* Player box is frameless on mobile (the filled button + golden icon are the
+       default everywhere now). */
     .player-content {
         background: transparent;
         border: 0;
         margin-top: 0;
-    }
-    .radio-play {
-        background: var(--text-color);
-    }
-    .radio-icon polygon,
-    .radio-icon rect {
-        fill: var(--bg-color);
     }
     .hero-text {
         align-items: center;
