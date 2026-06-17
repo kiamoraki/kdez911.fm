@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body class="landing-page">
+    <div class="glitch-layer" id="glitchLayer" aria-hidden="true"></div>
+    <div class="fish-layer" id="fishLayer" aria-hidden="true"></div>
     <a href="index.html" style="position: absolute; top: 2rem; left: 2rem; z-index: 100;">
         <img src="KDEZ_Logo.webp" alt="KDEZ Logo" style="max-width: 250px; height: auto;">
     </a>
@@ -20,7 +22,7 @@
             
             <main class="content-area">
                 <div class="text-content player-content">
-                    <iframe src="http://5.78.179.167/public/kdez911/embed" 
+                    <iframe src="https://stream.kdez911.fm/public/kdez911/embed" 
                             frameborder="0" 
                             style="width: 100%; height: 100%; min-height: 150px; border: 0; background-color: var(--bg-color); flex: 1;">
                     </iframe>
@@ -28,5 +30,281 @@
             </main>
         </div>
     </div>
+
+    <script>
+    /* --- Shared water mask (controlNetH2O): single source of truth for both animations.
+       Opaque (alpha>128) pixels = the water region where the fish jump. --- */
+    window.KDEZ = window.KDEZ || {};
+    KDEZ.mask = (function () {
+        var MASK_SRC = 'SCOTT_LONDON_0733-1-2-controlNetH2O.png';
+        var BG_W = 2000, BG_H = 1333, MASK_W = 600, MASK_H = 400;
+        var data = null;   // mask RGBA bytes, or null if unreadable
+        var water = [];     // flat [mx, my, ...] opaque (water) pixels
+        var ready = false;
+        var cbs = [];
+
+        function rand(a, b) { return Math.random() * (b - a) + a; }
+
+        // background-size: cover, centered, fixed -> map mask space <-> screen
+        function mapping() {
+            var W = window.innerWidth, H = window.innerHeight;
+            var scale = Math.max(W / BG_W, H / BG_H);
+            var dispW = BG_W * scale, dispH = BG_H * scale;
+            var offX = (W - dispW) / 2, offY = (H - dispH) / 2;
+            return {
+                W: W, H: H,
+                toScreen: function (mx, my) {
+                    return { x: offX + (mx / MASK_W) * dispW, y: offY + (my / MASK_H) * dispH };
+                },
+                toMask: function (sx, sy) {
+                    return { mx: ((sx - offX) / dispW) * MASK_W, my: ((sy - offY) / dispH) * MASK_H };
+                }
+            };
+        }
+
+        function alphaAt(mx, my) {
+            mx |= 0; my |= 0;
+            if (!data || mx < 0 || my < 0 || mx >= MASK_W || my >= MASK_H) return 0;
+            return data[(my * MASK_W + mx) * 4 + 3];
+        }
+
+        // is this screen point over the opaque (water) region?
+        function isWater(sx, sy) {
+            if (!ready) return false;
+            var m = mapping().toMask(sx, sy);
+            return alphaAt(m.mx, m.my) > 128;
+        }
+
+        // pick a random on-screen water point (for the fish launch/landing)
+        function pickWater(map) {
+            if (!ready) return { x: rand(0, map.W), y: rand(0, map.H) };
+            for (var t = 0; t < 80; t++) {
+                var idx = Math.floor(rand(0, water.length / 2)) * 2;
+                var p = map.toScreen(water[idx], water[idx + 1]);
+                if (p.x >= 0 && p.x <= map.W && p.y >= 0 && p.y <= map.H) return p;
+            }
+            return null;
+        }
+
+        var img = new Image();
+        img.onload = function () {
+            try {
+                var c = document.createElement('canvas');
+                c.width = MASK_W; c.height = MASK_H;
+                var ctx = c.getContext('2d');
+                ctx.drawImage(img, 0, 0, MASK_W, MASK_H);
+                data = ctx.getImageData(0, 0, MASK_W, MASK_H).data;
+                var step = 4; // subsample for speed
+                for (var y = 0; y < MASK_H; y += step)
+                    for (var x = 0; x < MASK_W; x += step)
+                        if (data[(y * MASK_W + x) * 4 + 3] > 128) water.push(x, y);
+                ready = water.length > 0;
+            } catch (e) { ready = false; }
+            for (var i = 0; i < cbs.length; i++) cbs[i]();
+        };
+        img.onerror = function () { ready = false; for (var i = 0; i < cbs.length; i++) cbs[i](); };
+        img.src = MASK_SRC;
+
+        return {
+            mapping: mapping,
+            isWater: isWater,
+            pickWater: pickWater,
+            onReady: function (cb) { if (ready) cb(); else cbs.push(cb); },
+            isReady: function () { return ready; }
+        };
+    })();
+    </script>
+
+    <script>
+    (function () {
+        var layer = document.getElementById('glitchLayer');
+        if (!layer) return;
+
+        var GIF = 'rainbow_pixel_glitch.gif';
+        var MIN = 10;  // never fewer than this many on screen
+        var MAX = 20;  // never more than this many on screen
+        var count = 0;
+
+        function rand(min, max) { return Math.random() * (max - min) + min; }
+
+        function spawn() {
+            if (count >= MAX) return;
+            count++;
+
+            var img = document.createElement('img');
+            img.src = GIF;
+            img.alt = '';
+            img.className = 'glitch-gif';
+
+            var size = 6; // fixed 6px x 6px
+            img.style.width = size + 'px';
+            img.style.height = size + 'px';
+
+            // spawn everywhere EXCEPT the water area (where the fish jump)
+            var vw = document.documentElement.clientWidth;
+            var vh = document.documentElement.clientHeight;
+            var gx = 0, gy = 0;
+            for (var tries = 0; tries < 40; tries++) {
+                gx = rand(0, Math.max(0, vw - size));
+                gy = rand(0, Math.max(0, vh - size));
+                if (!KDEZ.mask.isWater(gx + size / 2, gy + size / 2)) break;
+            }
+            img.style.left = gx + 'px';
+            img.style.top = gy + 'px';
+
+            layer.appendChild(img); // appears instantly at full opacity
+
+            // live 6-16s, then disappear instantly and reveal the background
+            var life = rand(6000, 16000);
+            setTimeout(function () {
+                img.remove();
+                count--;
+            }, life);
+        }
+
+        // keep the population between MIN and MAX, with a varying target
+        setInterval(function () {
+            while (count < MIN) spawn();
+            if (count < MAX && Math.random() < 0.5) spawn();
+        }, 700);
+
+        // initial burst — fill to the minimum right away
+        while (count < MIN) spawn();
+    })();
+    </script>
+
+    <script>
+    /* --- Fish dolphin-jump animation, restricted to the mask's black area --- */
+    (function () {
+        var layer = document.getElementById('fishLayer');
+        if (!layer) return;
+
+        var FISH_SRC = 'fish.svg';
+        var HEAD_RIGHT = true;          // fish.svg faces head-right (eye on the right)
+        var MAX_FISH = 2;               // max simultaneous jumps
+
+        function rand(a, b) { return Math.random() * (b - a) + a; }
+
+        var started = false;
+        var active = 0;
+        var fishAspect = 1.7;
+
+        var fishImg = new Image();
+        fishImg.onload = function () {
+            if (fishImg.naturalWidth && fishImg.naturalHeight) {
+                fishAspect = fishImg.naturalWidth / fishImg.naturalHeight;
+            }
+        };
+        fishImg.src = FISH_SRC;
+
+        // launch/landing points come from the shared water mask (KDEZ.mask)
+        KDEZ.mask.onReady(startLoop);
+
+        function pickPointNear(map, A, minD, maxD) {
+            for (var t = 0; t < 120; t++) {
+                var p = KDEZ.mask.pickWater(map);
+                if (!p) continue;
+                var dx = p.x - A.x, dy = p.y - A.y;
+                var d = Math.sqrt(dx * dx + dy * dy);
+                if (d >= minD && d <= maxD && Math.abs(dy) < maxD * 0.4) return p;
+            }
+            return null;
+        }
+
+        // directional reveal mask along the fish's body axis (head = right)
+        function maskCss(side, reveal) {
+            var feather = 14, pct = reveal * 100;
+            if ((side === 'head') === HEAD_RIGHT) {
+                // visible region grows/lives on the RIGHT
+                var edge = 100 - pct;
+                return 'linear-gradient(to right, transparent 0%, transparent ' +
+                    Math.max(0, edge - feather) + '%, black ' + edge + '%, black 100%)';
+            } else {
+                // visible region lives on the LEFT
+                return 'linear-gradient(to right, black 0%, black ' + pct + '%, transparent ' +
+                    Math.min(100, pct + feather) + '%, transparent 100%)';
+            }
+        }
+        function setMask(img, css) {
+            img.style.webkitMaskImage = css;
+            img.style.maskImage = css;
+        }
+
+        function animateJump(A, B, map) {
+            var img = document.createElement('img');
+            img.src = FISH_SRC;
+            img.alt = '';
+            img.className = 'fish-jumper';
+
+            var fw = rand(48, 92); // a bit smaller
+            var fh = fw / fishAspect;
+            img.style.width = fw + 'px';
+            img.style.height = fh + 'px';
+            layer.appendChild(img);
+            active++;
+
+            var dist = Math.sqrt((B.x - A.x) * (B.x - A.x) + (B.y - A.y) * (B.y - A.y));
+            var arc = Math.min(360, Math.max(120, dist * 0.5)); // jump height (rounder, wider arc)
+            var dur = rand(2300, 3300); // larger = slower; raised the floor so the fastest aren't jarring
+            var EM = 0.16, SUB = 0.16; // emerge / submerge fractions
+            var start = null;
+
+            function frame(ts) {
+                if (start === null) start = ts;
+                var t = (ts - start) / dur;
+                if (t >= 1) { img.remove(); active--; return; }
+
+                var x = A.x + (B.x - A.x) * t;
+                var y = (A.y + (B.y - A.y) * t) - arc * Math.sin(Math.PI * t);
+
+                // orient along velocity so the head leads
+                var vx = (B.x - A.x);
+                var vy = (B.y - A.y) - arc * Math.PI * Math.cos(Math.PI * t);
+                var pos = 'translate(' + (x - fw / 2) + 'px,' + (y - fh / 2) + 'px) ';
+
+                if (vx >= 0) {
+                    // jumping left-to-right: rotate to follow the arc
+                    var ang = Math.atan2(vy, vx) * 180 / Math.PI;
+                    img.style.transform = pos + 'rotate(' + ang + 'deg)';
+                } else {
+                    // jumping right-to-left: flip across the vertical axis so the
+                    // fish faces left and stays upright (not rotated belly-up)
+                    var angL = Math.atan2(-vy, -vx) * 180 / Math.PI;
+                    img.style.transform = pos + 'rotate(' + angL + 'deg) scaleX(-1)';
+                }
+
+                // emerge head-first, then full body, then submerge head-first (tail last)
+                if (t < EM) { setMask(img, maskCss('head', t / EM)); }
+                else if (t > 1 - SUB) { setMask(img, maskCss('tail', (1 - t) / SUB)); }
+                else { setMask(img, 'none'); }
+
+                requestAnimationFrame(frame);
+            }
+            requestAnimationFrame(frame);
+        }
+
+        function jump() {
+            var map = KDEZ.mask.mapping();
+            var A = KDEZ.mask.pickWater(map);
+            if (!A) return;
+            // wide arc: require a generous horizontal span, relaxing once if needed,
+            // but always keep the landing inside the water — skip rather than escape it
+            var B = pickPointNear(map, A, map.W * 0.18, map.W * 0.36)
+                 || pickPointNear(map, A, map.W * 0.11, map.W * 0.20);
+            if (!B) return;
+            animateJump(A, B, map);
+        }
+
+        function tryJump() {
+            if (active < MAX_FISH) jump();
+            setTimeout(tryJump, rand(1400, 3800));
+        }
+        function startLoop() {
+            if (started) return;
+            started = true;
+            setTimeout(tryJump, 600);
+        }
+    })();
+    </script>
 </body>
 </html>

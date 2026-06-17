@@ -35,6 +35,7 @@ body.landing-page {
     background-position: center;
     background-attachment: fixed;
     background-color: var(--bg-color);
+    overflow: hidden; /* pin the page so gif spawning never shifts content */
 }
 
 body.donate-page {
@@ -62,6 +63,41 @@ body.stay-in-touch-page {
     position: relative;
     min-height: 100vh;
     align-items: center;
+    z-index: 1; /* sit above the glitch layer */
+}
+
+/* --- Rainbow glitch layer (landing page) ---
+   Sits above the fixed background image but below all content. */
+.glitch-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none; /* never block clicks on content */
+}
+
+.glitch-gif {
+    position: absolute;
+    opacity: 1;
+    image-rendering: pixelated;
+}
+
+/* --- Fish jump layer (landing page) ---
+   Same band as the glitch layer: above the background, below content. */
+.fish-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.fish-jumper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: center center;
+    will-change: transform, -webkit-mask-image, mask-image;
 }
 
 /* --- Chaotic Menu --- */
