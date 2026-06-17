@@ -228,8 +228,11 @@
                 if (!ready) return { x: rand(0, map.W), y: rand(0, map.H) };
                 for (var t = 0; t < 80; t++) {
                     var idx = Math.floor(rand(0, inside.length / 2)) * 2;
-                    var p = map.toScreen(inside[idx], inside[idx + 1]);
-                    if (p.x >= 0 && p.x <= map.W && p.y >= 0 && p.y <= map.H) return p;
+                    var mx = inside[idx], my = inside[idx + 1];
+                    var p = map.toScreen(mx, my);
+                    if (p.x >= 0 && p.x <= map.W && p.y >= 0 && p.y <= map.H) {
+                        return { x: p.x, y: p.y, mx: mx, my: my };
+                    }
                 }
                 return null;
             }
@@ -264,11 +267,17 @@
            over hours and persists across navigation. */
         (function () {
             var layer = layerGlitch;
-            var START_COUNT = 4, MAX_COUNT = 300, PER_MINUTE = 1, RAMP_MS = 10000;
+            var START_COUNT = 4, MAX_COUNT = 1000, PER_MINUTE = 1, RAMP_MS = 10000;
             var count = 0, startMs = 0;
+            // Test mode: ?speed=N runs the accumulation N× faster (e.g. ?speed=120
+            // reaches the ceiling in ~2.5 min). No param = real speed (1×).
+            var SPEED = (function () {
+                var m = (location.search || '').match(/[?&]speed=(\d+(?:\.\d+)?)/);
+                return m ? Math.max(1, parseFloat(m[1])) : 1;
+            })();
             function rand(min, max) { return Math.random() * (max - min) + min; }
             function targetCount() {
-                var e = Date.now() - startMs;
+                var e = (Date.now() - startMs) * SPEED;
                 if (e < RAMP_MS) return START_COUNT * (e / RAMP_MS);
                 return Math.min(MAX_COUNT, START_COUNT + ((e - RAMP_MS) / 60000) * PER_MINUTE);
             }
@@ -278,6 +287,15 @@
             function lifespan() {
                 var p = progress();
                 return rand(6000 + 24000 * p, 16000 + 44000 * p);
+            }
+            // place a gif at its stored mask coordinate using the current mapping
+            function placeGif(el) {
+                if (el._mx == null) return;
+                var map = gifMask.mapping();
+                var s = map.toScreen(el._mx, el._my);
+                var size = el._size;
+                el.style.left = Math.min(Math.max(0, s.x - size / 2), Math.max(0, map.W - size)) + 'px';
+                el.style.top = Math.min(Math.max(0, s.y - size / 2), Math.max(0, map.H - size)) + 'px';
             }
             function spawn() {
                 if (count >= MAX_COUNT) return;
@@ -296,8 +314,8 @@
                 el.style.height = size + 'px';
                 el.style.animationDuration = rand(0.5, 1.1).toFixed(2) + 's';
                 el.style.animationDelay = (-rand(0, 1100)).toFixed(0) + 'ms';
-                el.style.left = Math.min(Math.max(0, p.x - size / 2), Math.max(0, map.W - size)) + 'px';
-                el.style.top = Math.min(Math.max(0, p.y - size / 2), Math.max(0, map.H - size)) + 'px';
+                el._mx = p.mx; el._my = p.my; el._size = size;
+                placeGif(el);
                 layer.appendChild(el);
                 setTimeout(function () { el.remove(); count--; }, lifespan());
             }
@@ -311,6 +329,18 @@
                     startMs = Date.now();
                     setInterval(topUp, 700);
                 });
+            });
+
+            // On viewport resize, re-map every existing gif to its land position
+            // for the new viewport (the background re-covers, so the masks shift).
+            // Debounced; runs after readBgPos has refreshed the background position.
+            var resizeT;
+            window.addEventListener('resize', function () {
+                clearTimeout(resizeT);
+                resizeT = setTimeout(function () {
+                    var kids = layer.children;
+                    for (var i = 0; i < kids.length; i++) placeGif(kids[i]);
+                }, 150);
             });
         })();
 
