@@ -11,6 +11,7 @@
     --bg-color: #e2c898;
     --text-color: #391910;
     --accent-color: #391910;
+    --tod-overlay: rgba(226, 200, 152, 0.3); /* time-of-day tint, set by JS (Pacific time) */
 }
 
 * {
@@ -30,18 +31,24 @@ body {
 }
 
 body.landing-page {
-    background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('SCOTT_LONDON_0733-1-2.jpg');
+    background-image: linear-gradient(var(--tod-overlay), var(--tod-overlay)), url('SCOTT_LONDON_0733-1-2.jpg');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
     background-color: var(--bg-color);
-    overflow: hidden; /* pin the page so gif spawning never shifts content */
+}
+
+body.about-page {
+    background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('bg-about-4.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-color: var(--bg-color);
 }
 
 body.donate-page {
     background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('VOSS_AMBIENCE-1.jpg');
-    background-size: contain;
-    background-repeat: no-repeat;
+    background-size: cover;
     background-position: center;
     background-attachment: fixed;
     background-color: var(--bg-color);
@@ -61,6 +68,7 @@ body.stay-in-touch-page {
     max-width: 1200px;
     padding: 2rem;
     position: relative;
+    top: 3rem; /* shift all page content down a bit (every page) */
     min-height: 100vh;
     align-items: center;
     z-index: 1; /* sit above the glitch layer */
@@ -71,7 +79,7 @@ body.stay-in-touch-page {
 .glitch-layer {
     position: fixed;
     inset: 0;
-    z-index: 0;
+    z-index: -1;
     overflow: hidden;
     pointer-events: none; /* never block clicks on content */
 }
@@ -79,7 +87,21 @@ body.stay-in-touch-page {
 .glitch-gif {
     position: absolute;
     opacity: 1;
-    image-rendering: pixelated;
+    /* lightweight rainbow "pixel glitch" — a solid square cycling colors instead of
+       an animated GIF, so hundreds of instances stay cheap. Per-instance duration
+       and (negative) delay are set in JS to desync them. */
+    animation: rainbow-glitch 0.8s steps(1, end) infinite;
+}
+
+@keyframes rainbow-glitch {
+    0%   { background: #ff45e6; }
+    14%  { background: #6c00fb; }
+    28%  { background: #df0d41; }
+    43%  { background: #fa4a16; }
+    57%  { background: #f8cc00; }
+    71%  { background: #1ca06e; }
+    86%  { background: #191eec; }
+    100% { background: #ff45e6; }
 }
 
 /* --- Fish jump layer (landing page) ---
@@ -87,9 +109,19 @@ body.stay-in-touch-page {
 .fish-layer {
     position: fixed;
     inset: 0;
-    z-index: 0;
+    z-index: -1;
     overflow: hidden;
     pointer-events: none;
+}
+
+/* The animations run persistently on every page (so they never restart on
+   navigation). On mobile they're visible site-wide; on desktop they only show on
+   the landing page (they keep running underneath, just hidden elsewhere). */
+@media (min-width: 769px) {
+    body:not(.landing-page) .glitch-layer,
+    body:not(.landing-page) .fish-layer {
+        display: none;
+    }
 }
 
 .fish-jumper {
@@ -108,6 +140,20 @@ body.stay-in-touch-page {
     width: 50%;
     gap: 1.5rem;
     padding: 2.5rem 0;
+}
+
+/* Inner pages place the nav directly in .container (homepage wraps it in
+   .content-wrapper, so this doesn't match there). Pin it to the viewport's
+   vertical center so it stays put even when page content is taller than the
+   viewport (e.g. the About page) instead of drifting down with the content.
+   Desktop only — the mobile layout stacks the nav. */
+@media (min-width: 769px) {
+    .container > .chaotic-menu {
+        align-self: flex-start;
+        height: 100vh;
+        position: sticky; /* stay pinned while the page scrolls */
+        top: 0;
+    }
 }
 
 .menu-item {
@@ -210,6 +256,34 @@ body.stay-in-touch-page {
     width: 50%;
     position: relative;
     padding-right: 4rem;
+    margin-top: 5rem;
+}
+
+/* Every page (all now share the same structure — nav + content-area directly in
+   .container): lift the heading to the top and drop the box to ~viewport center
+   (50vh minus half the box height), so the heading-to-box gap matches across all
+   pages including the homepage player. The heading is absolutely positioned so it
+   never pushes the box, and kept to one line so blocks are equal height.
+   Desktop only — mobile keeps its centered, stacked layout. */
+@media (min-width: 769px) {
+    .container > .content-area:has(.hero-text) {
+        align-self: stretch;
+        justify-content: flex-start;
+        position: relative;
+    }
+    .container > .content-area:has(.hero-text) .hero-text {
+        position: absolute;
+        top: 3rem;
+        right: 4rem;
+        margin-top: 0;
+    }
+    .container > .content-area:has(.hero-text) .text-content {
+        margin-top: calc(50vh - 141px); /* begin at the homepage player box's top */
+    }
+    .yellow-scratch,
+    .black-scratch {
+        white-space: nowrap; /* one line so the heading blocks are equal height */
+    }
 }
 
 .hero-text {
@@ -265,16 +339,202 @@ body.stay-in-touch-page {
 
 .player-content {
     margin-top: 0;
-    height: 100%;
+    height: auto;
+    min-height: 286px; /* match the Stay-in-Touch box height */
+    width: 100%; /* fill the column like the old iframe did, so the box keeps its width */
     display: flex;
     flex-direction: column;
+}
+
+/* --- Custom radio player (big play button + volume) --- */
+.radio-player {
+    flex: 1;
+    min-height: 150px; /* keep the same box height as the old iframe */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+.radio-play {
+    width: 96px;
+    height: 96px;
+    flex: 0 0 auto; /* never shrink in a flex row, so it stays a perfect circle */
+    border-radius: 50%;
+    border: 3px solid var(--text-color);
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: translateY(-28px); /* nudge up */
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.radio-play:hover {
+    transform: translateY(-28px) scale(1.06);
+    background: rgba(57, 25, 16, 0.08);
+}
+
+.radio-icon {
+    width: 52%;
+    height: 52%;
+    display: block;
+}
+
+.radio-icon polygon,
+.radio-icon rect {
+    fill: var(--text-color);
+}
+
+.icon-pause { display: none; }
+.radio-play.is-playing .icon-play { display: none; }
+.radio-play.is-playing .icon-pause { display: block; }
+
+.radio-play.is-loading {
+    animation: radio-pulse 1s ease-in-out infinite;
+}
+
+@keyframes radio-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.45; }
+}
+
+.radio-volume-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 80%;
+    max-width: 320px;
+}
+
+.radio-volume-icon {
+    width: 24px;
+    height: 24px;
+    flex: 0 0 auto;
+    color: var(--text-color);
+}
+.radio-volume-icon .spk { fill: currentColor; }
+.radio-volume-icon .vw {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+}
+
+/* Homepage player: center the slider under the play button. The icon is taken
+   out of the flow (hangs to the left) so it doesn't shift the slider's centering. */
+.radio-player .radio-volume-row {
+    position: relative;
+}
+.radio-player .radio-volume-icon {
+    position: absolute;
+    right: 100%;
+    margin-right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.radio-volume {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    height: 10px;
+    background: var(--text-color);
+    border-radius: 5px;
+    outline: none;
+    cursor: pointer;
+}
+
+.radio-volume::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--text-color);
+    border: 2px solid transparent;
+    cursor: pointer;
+}
+
+.radio-volume::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--text-color);
+    border: 2px solid transparent;
+    cursor: pointer;
+}
+
+/* --- Persistent mini player (shown on every page except the landing hero) --- */
+#miniPlayer {
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.6rem 1.1rem;
+    background: rgba(226, 200, 152, 0.92);
+    border: 2px solid var(--text-color);
+}
+
+#miniPlayer.is-hidden {
+    display: none;
+}
+
+.radio-play--mini {
+    width: 42px;
+    height: 42px;
+    border-width: 2px;
+    transform: none; /* override the big player's upward nudge */
+}
+
+.radio-play--mini:hover {
+    transform: scale(1.06);
+}
+
+#miniPlayer .radio-volume-row {
+    width: 150px;
+}
+
+@media (max-width: 768px) {
+    /* frameless, like the homepage player; span from past the logo to the edge so
+       the slider fills the width between the volume icon and the viewport edge */
+    #miniPlayer {
+        top: 1rem;
+        left: 10.5rem; /* clear the logo on the left */
+        right: 2.5rem; /* pull in so the slider isn't cramped against the edge */
+        height: 70px;  /* = the 140px logo's height; contents center vertically with the logo */
+        padding: 0;
+        gap: 0.5rem;
+        background: transparent;
+        border: 0;
+    }
+    #miniPlayer .radio-volume-row {
+        flex: 1;
+        width: auto;
+        max-width: none;
+    }
 }
 
 /* Media Query for Mobile */
 @media (max-width: 768px) {
     .container {
         flex-direction: column;
-        padding-top: 6rem;
+        padding-top: 3rem;
+    }
+    /* Mobile: the homepage background (Salton Sea aerial + time-of-day overlay) is
+       used across the whole site, shifted left to show more of the water edge. */
+    body.landing-page,
+    body.about-page,
+    body.donate-page,
+    body.stay-in-touch-page {
+        background-image: linear-gradient(var(--tod-overlay), var(--tod-overlay)), url('SCOTT_LONDON_0733-1-2.jpg');
+        background-position: 20% center;
     }
     .content-wrapper {
         flex-direction: column;
@@ -284,16 +544,33 @@ body.stay-in-touch-page {
         width: 100%;
         align-items: center;
         gap: 1rem;
+        order: 2; /* nav sits below the content, full width */
     }
     .content-area {
         width: 100%;
         align-items: center;
-        margin-top: 2rem;
+        margin-top: 0;
         padding-right: 0;
+        order: 1;
+    }
+
+    /* Player on mobile: filled button with a golden play icon, and a frameless,
+       background-less box. */
+    .player-content {
+        background: transparent;
+        border: 0;
+        margin-top: 0;
+    }
+    .radio-play {
+        background: var(--text-color);
+    }
+    .radio-icon polygon,
+    .radio-icon rect {
+        fill: var(--bg-color);
     }
     .hero-text {
         align-items: center;
-        margin-top: 2rem;
+        margin-top: 0;
     }
     .text-content {
         padding: 1.5rem;
