@@ -49,7 +49,7 @@ body.about-page {
 body.donate-page {
     background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('VOSS_AMBIENCE-1.jpg');
     background-size: cover;
-    background-position: center;
+    background-position: left bottom; /* keep the bottom-left on screen; crop top & right */
     background-attachment: fixed;
     background-color: var(--bg-color);
 }
