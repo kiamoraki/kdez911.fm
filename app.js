@@ -344,18 +344,22 @@
             });
         })();
 
-        /* Fish dolphin-jumps (water area). */
+        /* Fish dolphin-jumps (water area) + "feeding frenzy" chum mode. */
         (function () {
             var layer = layerFish;
-            var FISH_SRC = 'fish.svg', HEAD_RIGHT = true, MAX_FISH = 2;
+            var FISH_SRC = 'fish.svg', HEAD_RIGHT = true;
+            var MAX_FISH = 2, FRENZY_FISH = 30;
             function rand(a, b) { return Math.random() * (b - a) + a; }
             var started = false, active = 0, fishAspect = 1.7;
+            var chum = [];        // rainbow pixels the fish are eating
+            var frenzy = false;
             var fishImg = new Image();
             fishImg.onload = function () {
                 if (fishImg.naturalWidth && fishImg.naturalHeight) fishAspect = fishImg.naturalWidth / fishImg.naturalHeight;
             };
             fishImg.src = FISH_SRC;
             water.onReady(startLoop);
+
             function pickPointNear(map, A, minD, maxD) {
                 for (var t = 0; t < 120; t++) {
                     var p = water.pickInside(map);
@@ -375,7 +379,38 @@
                 return 'linear-gradient(to right, black 0%, black ' + pct + '%, transparent ' + Math.min(100, pct + feather) + '%, transparent 100%)';
             }
             function setMask(img, css) { img.style.webkitMaskImage = css; img.style.maskImage = css; }
-            function animateJump(A, B, map) {
+
+            // Release a burst of rainbow chum scattered across the water area.
+            function feedFrenzy() {
+                var map = water.mapping();
+                for (var i = 0; i < 80; i++) {
+                    var p = water.pickInside(map);
+                    if (!p || p.mx == null) continue;
+                    var size = rand(7, 13);
+                    var el = document.createElement('span');
+                    el.className = 'glitch-gif';
+                    el.style.width = size + 'px';
+                    el.style.height = size + 'px';
+                    el.style.animationDuration = rand(0.35, 0.8).toFixed(2) + 's';
+                    el.style.animationDelay = (-rand(0, 800)).toFixed(0) + 'ms';
+                    el._mx = p.mx; el._my = p.my; el._size = size;
+                    el.style.left = (p.x - size / 2) + 'px';
+                    el.style.top = (p.y - size / 2) + 'px';
+                    layer.appendChild(el);
+                    chum.push(el);
+                }
+                frenzy = true;
+                // immediate burst so it explodes into a frenzy instead of ramping up
+                for (var k = 0; k < 14 && active < FRENZY_FISH; k++) jump();
+            }
+            function chumPos(el, map) {
+                var s = map.toScreen(el._mx, el._my); // keep in sync with the viewport
+                el.style.left = (s.x - el._size / 2) + 'px';
+                el.style.top = (s.y - el._size / 2) + 'px';
+                return s;
+            }
+
+            function animateJump(A, B, map, targetEl) {
                 var img = document.createElement('img');
                 img.src = FISH_SRC; img.alt = ''; img.className = 'fish-jumper';
                 var mobile = window.matchMedia('(max-width: 768px)').matches;
@@ -388,7 +423,8 @@
                 layer.appendChild(img); active++;
                 var dist = Math.sqrt((B.x - A.x) * (B.x - A.x) + (B.y - A.y) * (B.y - A.y));
                 var arc = Math.min(360, Math.max(120, dist * 0.5));
-                var dur = rand(2300, 3300), EM = 0.16, SUB = 0.16, start = null;
+                var dur = targetEl ? rand(1100, 1900) : rand(2300, 3300); // frenzy jumps are quicker
+                var EM = 0.16, SUB = 0.16, start = null, ate = false;
                 function frame(ts) {
                     if (start === null) start = ts;
                     var t = (ts - start) / dur;
@@ -406,27 +442,59 @@
                     if (t < EM) { setMask(img, maskCss('head', t / EM)); }
                     else if (t > 1 - SUB) { setMask(img, maskCss('tail', (1 - t) / SUB)); }
                     else { setMask(img, 'none'); }
+                    // eat the chum only once the fish actually reaches/overlaps it
+                    if (targetEl && !ate) {
+                        var ex = x - B.x, ey = y - B.y;
+                        if (ex * ex + ey * ey < (fw * 0.6) * (fw * 0.6)) { targetEl.remove(); ate = true; }
+                    }
                     requestAnimationFrame(frame);
                 }
                 requestAnimationFrame(frame);
             }
+
             function jump() {
                 var map = water.mapping();
+                if (frenzy) {
+                    if (!chum.length) { frenzy = false; } // all eaten — settle back to normal
+                    else {
+                        var idx = Math.floor(rand(0, chum.length));
+                        var target = chum[idx];
+                        var B = chumPos(target, map);  // land right on the chum pixel
+                        var A = pickPointNear(map, B, map.W * 0.06, map.W * 0.22) || water.pickInside(map);
+                        if (!A) return;                // retry next tick; target stays
+                        chum.splice(idx, 1);           // claim it (removed on landing)
+                        animateJump(A, B, map, target);
+                        return;
+                    }
+                }
                 var A = water.pickInside(map);
                 if (!A) return;
                 var B = pickPointNear(map, A, map.W * 0.18, map.W * 0.36) || pickPointNear(map, A, map.W * 0.11, map.W * 0.20);
                 if (!B) return;
-                animateJump(A, B, map);
+                animateJump(A, B, map, null);
             }
             function tryJump() {
-                if (active < MAX_FISH) jump();
-                setTimeout(tryJump, rand(1400, 3800));
+                var cap = frenzy ? FRENZY_FISH : MAX_FISH;
+                if (active < cap) jump();
+                setTimeout(tryJump, frenzy ? rand(70, 200) : rand(1400, 3800));
             }
             function startLoop() {
                 if (started) return;
                 started = true;
                 setTimeout(tryJump, 600);
             }
+
+            // Chum button (bottom-left) — triggers a feeding frenzy.
+            var btn = document.getElementById('chumBtn');
+            if (!btn) {
+                btn = document.createElement('button');
+                btn.id = 'chumBtn';
+                btn.type = 'button';
+                btn.textContent = 'CHUM';
+                btn.setAttribute('aria-label', 'Release chum — feeding frenzy');
+                document.body.appendChild(btn);
+            }
+            btn.addEventListener('click', function () { water.onReady(feedFrenzy); });
         })();
     })();
 

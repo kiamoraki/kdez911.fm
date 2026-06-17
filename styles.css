@@ -119,9 +119,31 @@ body.stay-in-touch-page {
    the landing page (they keep running underneath, just hidden elsewhere). */
 @media (min-width: 769px) {
     body:not(.landing-page) .glitch-layer,
-    body:not(.landing-page) .fish-layer {
+    body:not(.landing-page) .fish-layer,
+    body:not(.landing-page) #chumBtn {
         display: none;
     }
+}
+
+/* Chum button — releases a feeding frenzy in the water (bottom-left) */
+#chumBtn {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 1.5rem;
+    z-index: 200;
+    padding: 0.5rem 1.4rem;
+    font-family: 'LobbyCard', monospace;
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+    color: var(--bg-color);
+    background: var(--text-color);
+    border: 2px solid var(--text-color);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+#chumBtn:hover {
+    transform: scale(1.06);
 }
 
 .fish-jumper {
