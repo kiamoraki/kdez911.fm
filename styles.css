@@ -374,6 +374,8 @@ body.stay-in-touch-page {
     width: 100%; /* fill the column like the old iframe did, so the box keeps its width */
     display: flex;
     flex-direction: column;
+    /* tint the box with the time-of-day overlay, like the page background */
+    background: linear-gradient(var(--tod-overlay), var(--tod-overlay)), rgba(226, 200, 152, 1);
 }
 
 /* --- Custom radio player (big play button + volume) --- */

@@ -51,11 +51,23 @@
             }
             return 'rgba(226,200,152,0.3)';
         }
+        // --- Testing overrides via URL ---
+        //   ?hour=N       force a fixed hour 0-24 (e.g. ?hour=6.5 sunrise, 19 sunset, 0 night)
+        //   ?todcycle=S   loop the whole 24h every S seconds to preview the transitions
+        var qs = location.search || '';
+        var forcedHour = (function () { var m = qs.match(/[?&]hour=(\d+(?:\.\d+)?)/); return m ? parseFloat(m[1]) : null; })();
+        var cycleSec = (function () { var m = qs.match(/[?&]todcycle=(\d+(?:\.\d+)?)/); return m ? parseFloat(m[1]) : null; })();
+        var cycleStart = Date.now();
+        function currentHours() {
+            if (forcedHour != null) return forcedHour;
+            if (cycleSec) return (((Date.now() - cycleStart) / (cycleSec * 1000)) % 1) * 24;
+            return pacificHours();
+        }
         function update() {
-            document.documentElement.style.setProperty('--tod-overlay', colorAt(pacificHours()));
+            document.documentElement.style.setProperty('--tod-overlay', colorAt(currentHours()));
         }
         update();
-        setInterval(update, 60000);
+        setInterval(update, cycleSec ? 100 : 60000);
     })();
 
     /* ---------- Persistent audio engine ---------- */
