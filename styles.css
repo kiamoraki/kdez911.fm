@@ -145,6 +145,58 @@ body.stay-in-touch-page {
 #chumBtn:hover {
     transform: scale(1.06);
 }
+#chumBtn .chum-bucket { display: none; } /* mobile shows the "CHUM" text label */
+
+/* Attention nudge: shake when ignored for a few seconds */
+@keyframes chum-shake {
+    0%, 100% { transform: rotate(0); }
+    15% { transform: rotate(-8deg); }
+    30% { transform: rotate(7deg); }
+    45% { transform: rotate(-5deg); }
+    60% { transform: rotate(4deg); }
+    75% { transform: rotate(-2deg); }
+}
+#chumBtn.chum-nudge { animation: chum-shake 0.6s ease; }
+
+/* Desktop: the chum button becomes a bucket icon, centered under the logo */
+@media (min-width: 769px) {
+    #chumBtn {
+        left: calc(2rem + 125px); /* center x of the 250px logo */
+        transform: translateX(-50%);
+        bottom: 2rem;
+        width: 200px;
+        height: 200px;
+        padding: 0;
+        background: transparent;
+        border: 0;
+        color: var(--text-color);
+    }
+    #chumBtn:hover { transform: translateX(-50%) scale(1.06); }
+    /* keep the bucket centered while it shakes */
+    @keyframes chum-shake-d {
+        0%, 100% { transform: translateX(-50%) rotate(0); }
+        15% { transform: translateX(-50%) rotate(-8deg); }
+        30% { transform: translateX(-50%) rotate(7deg); }
+        45% { transform: translateX(-50%) rotate(-5deg); }
+        60% { transform: translateX(-50%) rotate(4deg); }
+        75% { transform: translateX(-50%) rotate(-2deg); }
+    }
+    #chumBtn.chum-nudge { animation: chum-shake-d 0.6s ease; }
+    #chumBtn .chum-bucket { display: block; width: 100%; height: 100%; }
+    #chumBtn .chum-label { /* "CHUM" written on the bucket body */
+        display: block;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 55%;
+        transform: translateY(-50%);
+        text-align: center;
+        color: var(--bg-color);
+        font-size: 2.1rem;
+        letter-spacing: 1px;
+        pointer-events: none;
+    }
+}
 
 .fish-jumper {
     position: absolute;
@@ -532,6 +584,7 @@ body.stay-in-touch-page {
 
 #miniPlayer .radio-volume-row {
     width: 150px;
+    gap: 3rem; /* slider's left margin (space between the volume icon and the slider) */
 }
 
 @media (max-width: 768px) {

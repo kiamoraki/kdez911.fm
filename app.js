@@ -393,8 +393,17 @@
             function setMask(img, css) { img.style.webkitMaskImage = css; img.style.maskImage = css; }
 
             // Release a burst of rainbow chum scattered across the water area.
+            function bucketOrigin() {
+                var b = document.getElementById('chumBtn');
+                if (!b) return { x: window.innerWidth * 0.15, y: window.innerHeight * 0.85 };
+                var r = b.getBoundingClientRect();
+                // burst from the mouth of the bucket
+                return { x: r.left + r.width / 2, y: r.top + r.height * 0.22 };
+            }
             function feedFrenzy() {
                 var map = water.mapping();
+                var o = bucketOrigin();
+                var burst = [];
                 for (var i = 0; i < 80; i++) {
                     var p = water.pickInside(map);
                     if (!p || p.mx == null) continue;
@@ -408,12 +417,53 @@
                     el._mx = p.mx; el._my = p.my; el._size = size;
                     el.style.left = (p.x - size / 2) + 'px';
                     el.style.top = (p.y - size / 2) + 'px';
+                    // start crammed inside the bucket (small), then burst out to the water target
+                    el.style.transform = 'translate(' + (o.x - p.x).toFixed(1) + 'px,' + (o.y - p.y).toFixed(1) + 'px) scale(0.2)';
+                    el.style.transition = 'transform ' + rand(0.5, 0.95).toFixed(2) + 's cubic-bezier(0.12,0.8,0.28,1)';
+                    el.style.transitionDelay = (i * 3) + 'ms';
                     layer.appendChild(el);
                     chum.push(el);
+                    burst.push(el);
                 }
+                // one frame later, release them — they fly from the bucket out to their spots
+                requestAnimationFrame(function () {
+                    for (var j = 0; j < burst.length; j++) burst[j].style.transform = 'translate(0,0) scale(1)';
+                });
                 frenzy = true;
                 // immediate burst so it explodes into a frenzy instead of ramping up
                 for (var k = 0; k < 14 && active < FRENZY_FISH; k++) jump();
+            }
+            // Attention teaser: if nobody clicks the bucket, give it a shake and let a
+            // single pellet fly out for one fish to snap up — a hint at what CHUM does.
+            function teaseOne(b) {
+                b.classList.add('chum-nudge');
+                setTimeout(function () { b.classList.remove('chum-nudge'); }, 700);
+                var map = water.mapping();
+                var o = bucketOrigin();
+                var p = water.pickInside(map);
+                if (!p || p.mx == null) return;
+                var size = rand(8, 12);
+                var el = document.createElement('span');
+                el.className = 'glitch-gif';
+                el.style.width = size + 'px';
+                el.style.height = size + 'px';
+                el.style.animationDuration = rand(0.35, 0.8).toFixed(2) + 's';
+                el.style.animationDelay = (-rand(0, 800)).toFixed(0) + 'ms';
+                el._mx = p.mx; el._my = p.my; el._size = size;
+                el.style.left = (p.x - size / 2) + 'px';
+                el.style.top = (p.y - size / 2) + 'px';
+                el.style.transform = 'translate(' + (o.x - p.x).toFixed(1) + 'px,' + (o.y - p.y).toFixed(1) + 'px) scale(0.2)';
+                el.style.transition = 'transform 0.7s cubic-bezier(0.12,0.8,0.28,1)';
+                layer.appendChild(el);
+                requestAnimationFrame(function () { el.style.transform = 'translate(0,0) scale(1)'; });
+                // a lone fish leaps up to eat the single pellet once it has settled
+                setTimeout(function () {
+                    var m = water.mapping();
+                    var B = chumPos(el, m);
+                    var A = pickPointNear(m, B, m.W * 0.06, m.W * 0.22) || water.pickInside(m);
+                    if (!A) { el.remove(); return; }
+                    animateJump(A, B, m, el);
+                }, 700);
             }
             function chumPos(el, map) {
                 var s = map.toScreen(el._mx, el._my); // keep in sync with the viewport
@@ -452,12 +502,20 @@
                         img.style.transform = pos + 'rotate(' + (Math.atan2(-vy, -vx) * 180 / Math.PI) + 'deg) scaleX(-1)';
                     }
                     if (t < EM) { setMask(img, maskCss('head', t / EM)); }
-                    else if (t > 1 - SUB) { setMask(img, maskCss('tail', (1 - t) / SUB)); }
+                    // chum-chasers keep the nose showing until they actually eat, then
+                    // submerge-fade just like normal jumps do at the end of the arc
+                    else if (t > 1 - SUB && (!targetEl || ate)) { setMask(img, maskCss('tail', (1 - t) / SUB)); }
                     else { setMask(img, 'none'); }
-                    // eat the chum only once the fish actually reaches/overlaps it
+                    // eat the chum when the fish's nose (front of the sprite, along its
+                    // heading) actually reaches it — landing fallback so a fast descent
+                    // can't skip past one between frames
                     if (targetEl && !ate) {
-                        var ex = x - B.x, ey = y - B.y;
-                        if (ex * ex + ey * ey < (fw * 0.6) * (fw * 0.6)) { targetEl.remove(); ate = true; }
+                        var vlen = Math.sqrt(vx * vx + vy * vy) || 1;
+                        var noseX = x + (fw * 0.42) * (vx / vlen);
+                        var noseY = y + (fw * 0.42) * (vy / vlen);
+                        var dnx = noseX - B.x, dny = noseY - B.y;
+                        var hitR = (targetEl._size || 10) / 2 + 4;
+                        if (dnx * dnx + dny * dny < hitR * hitR || t > 0.98) { targetEl.remove(); ate = true; }
                     }
                     requestAnimationFrame(frame);
                 }
@@ -502,11 +560,30 @@
                 btn = document.createElement('button');
                 btn.id = 'chumBtn';
                 btn.type = 'button';
-                btn.textContent = 'CHUM';
+                btn.innerHTML =
+                    '<svg class="chum-bucket" viewBox="0 0 24 24" aria-hidden="true">' +
+                        '<path class="chum-handle" d="M6 7 Q12 1.5 18 7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>' +
+                        '<path d="M4.3 7 L19.7 7 L16.8 21.5 L7.2 21.5 Z" fill="currentColor"/>' +
+                    '</svg>' +
+                    '<span class="chum-label">CHUM</span>';
                 btn.setAttribute('aria-label', 'Release chum — feeding frenzy');
                 document.body.appendChild(btn);
             }
             btn.addEventListener('click', function () { water.onReady(feedFrenzy); });
+
+            // Ambient nudge: first at 5s, then sporadically (~once a minute) the bucket
+            // shakes and spits out a single pellet for a fish to grab. Skips a tick while
+            // a real frenzy is underway or when the bucket isn't on screen.
+            function scheduleTease(delay) {
+                setTimeout(function () {
+                    water.onReady(function () {
+                        var b = document.getElementById('chumBtn');
+                        if (b && b.offsetParent !== null && !frenzy) teaseOne(b);
+                    });
+                    scheduleTease(rand(50000, 70000));
+                }, delay);
+            }
+            scheduleTease(5000);
         })();
     })();
 
