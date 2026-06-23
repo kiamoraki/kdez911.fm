@@ -81,8 +81,7 @@
     }
 
     var playing = false;
-    var volume = 0.8;
-    var controls = []; // { btn, vol, persistent }
+    var controls = []; // { btn, persistent }
 
     function setLoading(on) {
         for (var i = 0; i < controls.length; i++) {
@@ -97,12 +96,10 @@
                 c.btn.setAttribute('aria-pressed', playing ? 'true' : 'false');
                 c.btn.setAttribute('aria-label', (playing ? 'Pause' : 'Play') + ' KDEZ 91.1 FM');
             }
-            if (c.vol) c.vol.value = Math.round(volume * 100);
         }
     }
     function play() {
         audio.src = STREAM;
-        audio.volume = volume;
         playing = true;
         setLoading(true);
         syncUI();
@@ -118,7 +115,6 @@
         syncUI();
     }
     function toggle() { playing ? pause() : play(); }
-    function setVolume(v) { volume = Math.max(0, Math.min(1, v)); audio.volume = volume; syncUI(); }
 
     audio.addEventListener('playing', function () { playing = true; setLoading(false); syncUI(); });
     audio.addEventListener('waiting', function () { if (playing) setLoading(true); });
@@ -126,17 +122,14 @@
 
     function bindControls(scope, persistent) {
         var btn = scope.querySelector('.radio-play');
-        var vol = scope.querySelector('.radio-volume');
-        if (!btn && !vol) return;
-        var set = { btn: btn, vol: vol, persistent: !!persistent };
-        controls.push(set);
-        if (btn) btn.addEventListener('click', toggle);
-        if (vol) vol.addEventListener('input', function () { setVolume(vol.value / 100); });
+        if (!btn) return;
+        controls.push({ btn: btn, persistent: !!persistent });
+        btn.addEventListener('click', toggle);
     }
     function dropDetachedControls() {
         controls = controls.filter(function (c) {
             if (c.persistent) return true;
-            return (c.btn && document.body.contains(c.btn)) || (c.vol && document.body.contains(c.vol));
+            return c.btn && document.body.contains(c.btn);
         });
     }
 
@@ -148,21 +141,46 @@
         mini.innerHTML =
             '<button class="radio-play radio-play--mini" type="button" aria-label="Play KDEZ 91.1 FM" aria-pressed="false">' +
                 '<svg class="radio-icon" viewBox="0 0 100 100" aria-hidden="true">' +
-                    '<polygon class="icon-play" points="36,24 36,76 80,50"></polygon>' +
-                    '<g class="icon-pause"><rect x="31" y="26" width="13" height="48"></rect><rect x="56" y="26" width="13" height="48"></rect></g>' +
+                    '<defs>' +
+                        '<mask id="m-play-mini"><circle cx="50" cy="50" r="50" fill="white"/><polygon points="36,24 36,76 80,50" fill="black"/></mask>' +
+                        '<mask id="m-pause-mini"><circle cx="50" cy="50" r="50" fill="white"/><rect x="31" y="26" width="13" height="48" fill="black"/><rect x="56" y="26" width="13" height="48" fill="black"/></mask>' +
+                    '</defs>' +
+                    '<circle class="icon-fill-play" cx="50" cy="50" r="50" fill="currentColor" mask="url(#m-play-mini)"/>' +
+                    '<circle class="icon-fill-pause" cx="50" cy="50" r="50" fill="currentColor" mask="url(#m-pause-mini)"/>' +
+                    '<circle cx="50" cy="50" r="47" fill="none" stroke="currentColor" stroke-width="3"/>' +
                 '</svg>' +
-            '</button>' +
-            '<div class="radio-volume-row">' +
-                '<svg class="radio-volume-icon" viewBox="0 0 24 24" aria-hidden="true">' +
-                    '<path class="spk" d="M3 9v6h4l5 4V5L7 9H3z"></path>' +
-                    '<path class="vw" d="M16 8.5a4 4 0 0 1 0 7"></path>' +
-                    '<path class="vw" d="M19 6a8 8 0 0 1 0 12"></path>' +
-                '</svg>' +
-                '<input class="radio-volume" type="range" min="0" max="100" value="80" aria-label="Volume">' +
-            '</div>';
+            '</button>';
         document.body.appendChild(mini);
     }
     bindControls(mini, true);
+
+    /* ---------- Social icons (bottom-right, persistent) ---------- */
+    if (!document.getElementById('bottomBar')) {
+        var bottomBar = document.createElement('div');
+        bottomBar.id = 'bottomBar';
+        document.body.appendChild(bottomBar);
+    }
+    if (!document.getElementById('socialBar')) {
+        var socialBar = document.createElement('div');
+        socialBar.id = 'socialBar';
+        socialBar.innerHTML =
+            '<a href="mailto:radio@kdez911.fm" class="social-email">radio@kdez911.fm</a>' +
+            '<a href="https://discord.gg/FewJefNrPg" target="_blank" rel="noopener" aria-label="Discord" class="social-icon">' +
+                '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+                    '<path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.001.024.015.048.034.063a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/>' +
+                    '<ellipse cx="8.5" cy="11.5" rx="1.25" ry="1.4" style="fill:var(--text-color)"/>' +
+                    '<ellipse cx="15.5" cy="11.5" rx="1.25" ry="1.4" style="fill:var(--text-color)"/>' +
+                '</svg>' +
+            '</a>' +
+            '<a href="https://www.instagram.com/kdez91.1fm" target="_blank" rel="noopener" aria-label="Instagram" class="social-icon">' +
+                '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+                    '<rect x="2" y="2" width="20" height="20" rx="5.5" style="fill:var(--bg-color)"/>' +
+                    '<circle cx="12" cy="12" r="4.4" style="fill:var(--text-color)"/>' +
+                    '<circle cx="17.2" cy="6.8" r="1.2" style="fill:var(--text-color)"/>' +
+                '</svg>' +
+            '</a>';
+        (document.getElementById('bottomBar') || document.body).appendChild(socialBar);
+    }
 
     function updateMiniVisibility() {
         mini.classList.toggle('is-hidden', document.body.classList.contains('landing-page'));
@@ -562,14 +580,139 @@
                 btn.type = 'button';
                 btn.innerHTML =
                     '<svg class="chum-bucket" viewBox="0 0 24 24" aria-hidden="true">' +
-                        '<path class="chum-handle" d="M6 7 Q12 1.5 18 7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>' +
-                        '<path d="M4.3 7 L19.7 7 L16.8 21.5 L7.2 21.5 Z" fill="currentColor"/>' +
+                        '<path class="chum-handle" d="M6 7 Q12 -1 18 7" fill="none" stroke="currentColor" stroke-width="0.7" stroke-linecap="round"/>' +
+                        '<path class="chum-body" d="M5.1 7 L18.9 7 Q19.7 7 19.5 7.8 L17 20.7 Q16.8 21.5 16 21.5 L8 21.5 Q7.2 21.5 7 20.7 L4.5 7.8 Q4.3 7 5.1 7 Z" stroke="currentColor" stroke-width="1.5"/>' +
                     '</svg>' +
                     '<span class="chum-label">CHUM</span>';
                 btn.setAttribute('aria-label', 'Release chum — feeding frenzy');
-                document.body.appendChild(btn);
+                (document.getElementById('bottomBar') || document.body).appendChild(btn);
             }
             btn.addEventListener('click', function () { water.onReady(feedFrenzy); });
+
+            if (false) { // canvas removed
+                (function initChumPixels() {
+                    var SCALE = 200 / 24;
+                    var PS = 9;
+                    var COLORS = ['#ff45e6', '#6c00fb', '#df0d41', '#fa4a16', '#f8cc00', '#1ca06e', '#191eec'];
+                    var M = 120;
+                    var W = 200 + M * 2;
+                    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+                    var TAU = Math.PI * 2;
+
+                    var cv = document.createElement('canvas');
+                    cv.width = W * dpr;
+                    cv.height = W * dpr;
+                    cv.style.cssText = 'position:absolute;top:-' + M + 'px;left:-' + M + 'px;width:' + W + 'px;height:' + W + 'px;pointer-events:none;z-index:1;';
+                    btn.insertBefore(cv, btn.firstChild);
+
+                    var ctx = cv.getContext('2d');
+                    ctx.scale(dpr, dpr);
+                    ctx.translate(M, M);
+
+                    var TY = 7 * SCALE, BY = 21.5 * SCALE;
+                    var TL = 4.3 * SCALE, TR = 19.7 * SCALE;
+                    var BL = 7.2 * SCALE, BR = 16.8 * SCALE;
+                    var BCX = (TL + TR) / 2, BCY = (TY + BY) / 2;
+
+                    function lx(y) { return TL + (BL - TL) * (y - TY) / (BY - TY); }
+                    function rx(y) { return TR + (BR - TR) * (y - TY) / (BY - TY); }
+                    function inside(x, y) { return y >= TY && y <= BY && x >= lx(y) && x <= rx(y); }
+
+                    var pixels = [];
+                    for (var px = TL; px < TR - PS; px += 15) {
+                        for (var py = TY + 28; py < BY - PS; py += 15) {
+                            if (inside(px + PS * 0.5, py + PS * 0.5)) {
+                                var sz = 4 + Math.floor(Math.random() * 11); // size 4–14
+                                pixels.push({ hx: px, hy: py, x: px, y: py, vx: 0, vy: 0, color: '', size: sz, offset: Math.random() * TAU });
+                            }
+                        }
+                    }
+
+                    var busy = false, rafId = null, angle = 0;
+
+                    function pixelColor(p) {
+                        return COLORS[Math.floor(((angle + p.offset) / TAU * COLORS.length) % COLORS.length)];
+                    }
+
+                    function spinDraw() {
+                        ctx.clearRect(-M, -M, W, W);
+                        angle = (angle + 0.008) % TAU;
+                        for (var i = 0; i < pixels.length; i++) {
+                            var p = pixels[i];
+                            ctx.fillStyle = pixelColor(p);
+                            ctx.fillRect(Math.round(p.hx), Math.round(p.hy), p.size, p.size);
+                        }
+                        if (!busy) rafId = requestAnimationFrame(spinDraw);
+                    }
+                    spinDraw();
+
+                    btn.addEventListener('click', function () {
+                        if (busy) return;
+                        busy = true;
+                        if (rafId) cancelAnimationFrame(rafId);
+
+                        var G = 0.38, phase = 1, t = 0;
+
+                        for (var i = 0; i < pixels.length; i++) {
+                            var p = pixels[i];
+                            p.x = p.hx; p.y = p.hy;
+                            p.color = pixelColor(p); // snapshot current color
+                            var dx = p.hx + p.size / 2 - BCX, dy = p.hy + p.size / 2 - BCY;
+                            var len = Math.sqrt(dx * dx + dy * dy) || 1;
+                            var spd = 5 + Math.random() * 9;
+                            p.vx = (dx / len) * spd + (Math.random() - 0.5) * 5;
+                            p.vy = (dy / len) * spd - 1 - Math.random() * 5;
+                        }
+
+                        function step() {
+                            ctx.clearRect(-M, -M, W, W);
+                            t++;
+
+                            if (phase === 1) {
+                                var gone = true;
+                                for (var i = 0; i < pixels.length; i++) {
+                                    var p = pixels[i];
+                                    p.x += p.vx; p.y += p.vy; p.vy += G;
+                                    if (p.y < 220) gone = false;
+                                    ctx.fillStyle = p.color;
+                                    ctx.fillRect(Math.round(p.x), Math.round(p.y), p.size, p.size);
+                                }
+                                if (gone || t > 100) {
+                                    phase = 2; t = 0;
+                                    for (var i = 0; i < pixels.length; i++) {
+                                        var p = pixels[i];
+                                        p.x = p.hx + (Math.random() - 0.5) * 4;
+                                        p.y = TY - 10 - Math.random() * 80;
+                                        p.vx = 0; p.vy = 0.5;
+                                    }
+                                }
+                            } else if (phase === 2) {
+                                if (t >= 30) { phase = 3; t = 0; }
+                            } else {
+                                var done = true;
+                                for (var i = 0; i < pixels.length; i++) {
+                                    var p = pixels[i];
+                                    angle = (angle + 0.008 / pixels.length) % TAU;
+                                    p.color = pixelColor(p);
+                                    if (p.y < p.hy) {
+                                        p.vy += G * 0.7;
+                                        p.y += p.vy;
+                                        p.x += (p.hx - p.x) * 0.08;
+                                        if (p.y >= p.hy) { p.x = p.hx; p.y = p.hy; }
+                                        else done = false;
+                                    }
+                                    ctx.fillStyle = p.color;
+                                    ctx.fillRect(Math.round(p.x), Math.round(p.y), p.size, p.size);
+                                }
+                                if (done) { busy = false; spinDraw(); return; }
+                            }
+
+                            rafId = requestAnimationFrame(step);
+                        }
+                        step();
+                    });
+                })();
+            }
 
             // Ambient nudge: first at 5s, then sporadically (~once a minute) the bucket
             // shakes and spits out a single pellet for a fish to grab. Skips a tick while
@@ -621,6 +764,18 @@
         }
     }
 
+    function markActiveNav() {
+        var path = location.pathname;
+        var links = document.querySelectorAll('.chaotic-menu .menu-item');
+        for (var i = 0; i < links.length; i++) {
+            if (links[i].pathname === path) {
+                links[i].setAttribute('aria-current', 'page');
+            } else {
+                links[i].removeAttribute('aria-current');
+            }
+        }
+    }
+
     function swapTo(html, url, push) {
         var doc = new DOMParser().parseFromString(html, 'text/html');
         var next = doc.querySelector('.container');
@@ -639,6 +794,7 @@
         bindControls(next, false);
         updateMiniVisibility();
         syncUI();
+        markActiveNav();
     }
 
     function navigate(url, push) {
@@ -665,6 +821,7 @@
         if (c) bindControls(c, false);
         updateMiniVisibility();
         syncUI();
+        markActiveNav();
     }
     if (document.readyState !== 'loading') init();
     else document.addEventListener('DOMContentLoaded', init);

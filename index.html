@@ -13,8 +13,6 @@
     </a>
     <div class="container">
         <div class="hero-text">
-            <span class="yellow-scratch">LIVE</span>
-            <span class="black-scratch">STREAM</span>
         </div>
         <nav class="chaotic-menu">
                 <a href="about.html" class="menu-item size-l has-line offset-1">About</a>
@@ -28,22 +26,21 @@
                         <button id="radioToggle" class="radio-play" type="button"
                                 aria-label="Play KDEZ 91.1 FM" aria-pressed="false">
                             <svg class="radio-icon" viewBox="0 0 100 100" aria-hidden="true">
-                                <polygon class="icon-play" points="36,24 36,76 80,50"></polygon>
-                                <g class="icon-pause">
-                                    <rect x="31" y="26" width="13" height="48"></rect>
-                                    <rect x="56" y="26" width="13" height="48"></rect>
-                                </g>
+                                <defs>
+                                    <mask id="m-play">
+                                        <circle cx="50" cy="50" r="50" fill="white"/>
+                                        <polygon points="40,33 40,67 70,50" fill="black"/>
+                                    </mask>
+                                    <mask id="m-pause">
+                                        <circle cx="50" cy="50" r="50" fill="white"/>
+                                        <rect x="37" y="33" width="9" height="34" fill="black"/>
+                                        <rect x="54" y="33" width="9" height="34" fill="black"/>
+                                    </mask>
+                                </defs>
+                                <circle class="icon-fill-play" cx="50" cy="50" r="50" fill="currentColor" mask="url(#m-play)"/>
+                                <circle class="icon-fill-pause" cx="50" cy="50" r="50" fill="currentColor" mask="url(#m-pause)"/>
                             </svg>
                         </button>
-                        <div class="radio-volume-row">
-                            <svg class="radio-volume-icon" viewBox="0 0 24 24" aria-hidden="true">
-                                <path class="spk" d="M3 9v6h4l5 4V5L7 9H3z"></path>
-                                <path class="vw" d="M16 8.5a4 4 0 0 1 0 7"></path>
-                                <path class="vw" d="M19 6a8 8 0 0 1 0 12"></path>
-                            </svg>
-                            <input id="radioVolume" class="radio-volume" type="range"
-                                   min="0" max="100" value="80" aria-label="Volume">
-                        </div>
                     </div>
                 </div>
             </main>

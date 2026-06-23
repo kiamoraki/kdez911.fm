@@ -39,15 +39,15 @@ body.landing-page {
 }
 
 body.about-page {
-    background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('bg-about-4.jpg');
+    background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('VOSS_AMBIENCE-1.jpg');
     background-size: cover;
-    background-position: center;
+    background-position: left center;
     background-attachment: fixed;
     background-color: var(--bg-color);
 }
 
 body.donate-page {
-    background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('VOSS_AMBIENCE-1.jpg');
+    background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('KDEZ_Donate.jpg');
     background-size: cover;
     background-position: left bottom; /* keep the bottom-left on screen; crop top & right */
     background-attachment: fixed;
@@ -55,9 +55,9 @@ body.donate-page {
 }
 
 body.stay-in-touch-page {
-    background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('SLABS_KDEZ-4.jpg');
+    background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('SLABS_KDEZ.png');
     background-size: cover;
-    background-position: center;
+    background-position: center bottom;
     background-attachment: fixed;
     background-color: var(--bg-color);
 }
@@ -161,15 +161,16 @@ body.stay-in-touch-page {
 /* Desktop: the chum button becomes a bucket icon, centered under the logo */
 @media (min-width: 769px) {
     #chumBtn {
-        left: calc(2rem + 125px); /* center x of the 250px logo */
+        left: calc(100px + 1rem);
         transform: translateX(-50%);
-        bottom: 2rem;
+        bottom: 1rem;
         width: 200px;
         height: 200px;
         padding: 0;
         background: transparent;
         border: 0;
         color: var(--text-color);
+        opacity: 0.92;
     }
     #chumBtn:hover { transform: translateX(-50%) scale(1.06); }
     /* keep the bucket centered while it shakes */
@@ -182,7 +183,8 @@ body.stay-in-touch-page {
         75% { transform: translateX(-50%) rotate(-2deg); }
     }
     #chumBtn.chum-nudge { animation: chum-shake-d 0.6s ease; }
-    #chumBtn .chum-bucket { display: block; width: 100%; height: 100%; }
+    #chumBtn .chum-bucket { display: block; width: 100%; height: 100%; position: relative; z-index: 2; }
+    #chumBtn .chum-body { fill: var(--bg-color); }
     #chumBtn .chum-label { /* "CHUM" written on the bucket body */
         display: block;
         position: absolute;
@@ -191,10 +193,11 @@ body.stay-in-touch-page {
         top: 55%;
         transform: translateY(-50%);
         text-align: center;
-        color: var(--bg-color);
+        color: var(--text-color);
         font-size: 2.1rem;
         letter-spacing: 1px;
         pointer-events: none;
+        z-index: 2;
     }
 }
 
@@ -228,6 +231,10 @@ body.stay-in-touch-page {
 
 .menu-item:hover {
     transform: scale(1.05) rotate(-2deg);
+}
+
+.menu-item[aria-current="page"] {
+    color: var(--text-color);
 }
 
 .size-l {
@@ -268,7 +275,6 @@ body.stay-in-touch-page {
     opacity: 1;
     transform: rotate(1deg);
     z-index: -1;
-    filter: url(#rough-edge); /* For later refinement if needed */
 }
 
 .has-line-bottom::after {
@@ -333,6 +339,16 @@ body.stay-in-touch-page {
         top: 0; /* override the base shift */
         padding-top: 10.5rem; /* begin below the logo (top 2rem + ~125px tall) */
     }
+    body.landing-page .container {
+        align-content: center;
+        padding-top: 0;
+    }
+    body.landing-page .hero-text {
+        display: none;
+    }
+    body.landing-page .content-area {
+        margin-top: 0;
+    }
     .container > .hero-text {
         grid-column: 2;
         grid-row: 1;
@@ -341,12 +357,20 @@ body.stay-in-touch-page {
         padding-right: 4rem; /* align the heading's right edge with the box */
     }
     .container > .chaotic-menu {
-        grid-column: 1;
-        grid-row: 2;
-        margin-top: 2rem;   /* nav sits 2rem below the hero */
-        width: auto;
+        position: fixed;
+        left: 0;
+        right: calc(600px + 4rem);
+        top: 0;
+        bottom: 0;
         height: auto;
-        align-self: start;
+        width: auto;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 50;
+        overflow: hidden;
     }
     .container > .content-area {
         grid-column: 2;
@@ -354,6 +378,8 @@ body.stay-in-touch-page {
         margin-top: 1rem;   /* box top 1rem above the nav's top */
         width: auto;
         align-self: start;
+        position: relative;
+        z-index: 60; /* above the fixed nav (z-index: 50) so text boxes cover the nav lines */
     }
     .content-area .player-content {
         margin-top: 2rem;   /* match the text boxes on the other pages (beats base .player-content) */
@@ -382,7 +408,7 @@ body.stay-in-touch-page {
     max-width: 600px;
     margin-top: 2rem;
     line-height: 1.6;
-    background: rgba(226, 200, 152, 1);
+    background: rgba(226, 200, 152, 0.75);
     padding: 2rem;
     border: 2px solid var(--text-color);
 }
@@ -426,8 +452,9 @@ body.stay-in-touch-page {
     width: 100%; /* fill the column like the old iframe did, so the box keeps its width */
     display: flex;
     flex-direction: column;
-    /* tint the box with the time-of-day overlay, like the page background */
-    background: linear-gradient(var(--tod-overlay), var(--tod-overlay)), rgba(226, 200, 152, 1);
+    background: transparent;
+    border: none;
+    padding: 0;
 }
 
 /* --- Custom radio player (big play button + volume) --- */
@@ -442,40 +469,44 @@ body.stay-in-touch-page {
 }
 
 .radio-play {
-    width: 96px;
-    height: 96px;
+    width: 280px;
+    height: 280px;
     flex: 0 0 auto; /* never shrink in a flex row, so it stays a perfect circle */
     border-radius: 50%;
-    border: 3px solid var(--text-color);
-    background: var(--text-color); /* filled */
+    border: none;
+    background: transparent;
+    color: var(--text-color);
     cursor: pointer;
     padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    transform: translateY(-28px); /* nudge up */
-    transition: transform 0.2s ease, background 0.2s ease;
+    transform: translateY(-28px);
+    transition: transform 0.2s ease;
 }
 
 .radio-play:hover {
     transform: translateY(-28px) scale(1.06);
-    background: rgba(57, 25, 16, 0.08);
+}
+
+body.landing-page .radio-play {
+    transform: none;
+    opacity: 0.92;
+}
+
+body.landing-page .radio-play:hover {
+    transform: scale(1.06);
 }
 
 .radio-icon {
-    width: 52%;
-    height: 52%;
+    width: 100%;
+    height: 100%;
     display: block;
 }
 
-.radio-icon polygon,
-.radio-icon rect {
-    fill: var(--bg-color); /* golden icon on the filled button */
-}
-
-.icon-pause { display: none; }
-.radio-play.is-playing .icon-play { display: none; }
-.radio-play.is-playing .icon-pause { display: block; }
+.icon-fill-pause { display: none; }
+.radio-play.is-playing .icon-fill-play { display: none; }
+.radio-play.is-playing .icon-fill-pause { display: block; }
 
 .radio-play.is-loading {
     animation: radio-pulse 1s ease-in-out infinite;
@@ -486,77 +517,12 @@ body.stay-in-touch-page {
     50% { opacity: 0.45; }
 }
 
-.radio-volume-row {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    width: 80%;
-    max-width: 320px;
-}
-
-.radio-volume-icon {
-    width: 24px;
-    height: 24px;
-    flex: 0 0 auto;
-    color: var(--text-color);
-}
-.radio-volume-icon .spk { fill: currentColor; }
-.radio-volume-icon .vw {
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2;
-    stroke-linecap: round;
-}
-
-/* Homepage player: center the slider under the play button. The icon is taken
-   out of the flow (hangs to the left) so it doesn't shift the slider's centering. */
-.radio-player .radio-volume-row {
-    position: relative;
-}
-.radio-player .radio-volume-icon {
-    position: absolute;
-    right: 100%;
-    margin-right: 0.5rem;
-    top: 50%;
-    transform: translateY(-50%);
-}
-
-.radio-volume {
-    -webkit-appearance: none;
-    appearance: none;
-    flex: 1;
-    height: 10px;
-    background: var(--text-color);
-    border-radius: 5px;
-    outline: none;
-    cursor: pointer;
-}
-
-.radio-volume::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: var(--text-color);
-    border: 2px solid transparent;
-    cursor: pointer;
-}
-
-.radio-volume::-moz-range-thumb {
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: var(--text-color);
-    border: 2px solid transparent;
-    cursor: pointer;
-}
 
 /* --- Persistent mini player (shown on every page except the landing hero) --- */
 #miniPlayer {
     position: fixed;
     top: 2rem;
-    right: 2rem;
+    right: 4rem;
     z-index: 200;
     display: flex;
     align-items: center;
@@ -572,9 +538,8 @@ body.stay-in-touch-page {
 }
 
 .radio-play--mini {
-    width: 42px;
-    height: 42px;
-    border-width: 2px;
+    width: 70px;
+    height: 70px;
     transform: none; /* override the big player's upward nudge */
 }
 
@@ -588,27 +553,57 @@ body.stay-in-touch-page {
 }
 
 @media (max-width: 768px) {
-    /* frameless, like the homepage player; span from past the logo to the edge so
-       the slider fills the width between the volume icon and the viewport edge */
     #miniPlayer {
-        top: 1rem;
-        left: 10.5rem; /* clear the logo on the left */
-        right: 2.5rem; /* pull in so the slider isn't cramped against the edge */
-        height: 70px;  /* = the 140px logo's height; contents center vertically with the logo */
+        top: 1.5rem;
+        right: 1.5rem;
+        left: auto;
+        height: auto;
         padding: 0;
-        gap: 0.5rem;
+        gap: 0;
         background: transparent;
         border: 0;
     }
-    #miniPlayer .radio-volume-row {
-        flex: 1;
-        width: auto;
-        max-width: none;
+    .radio-play--mini {
+        width: 48px;
+        height: 48px;
     }
 }
 
 /* Media Query for Mobile */
 @media (max-width: 768px) {
+    /* Mirror the fixed body background at the top so scrolling content
+       fades out behind the logo rather than visually overlapping it. */
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 120px;
+        background-image: linear-gradient(var(--tod-overlay), var(--tod-overlay)), url('SCOTT_LONDON_0733-1-2.jpg');
+        background-attachment: fixed;
+        background-position: 20% center;
+        background-size: cover;
+        z-index: 95;
+        pointer-events: none;
+        -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+        mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+    }
+
+    /* Subpages: body is a flex column so #bottomBar is pushed to the true page bottom */
+    body:not(.landing-page) {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+    body:not(.landing-page) .container {
+        flex: 1;
+        padding-bottom: 4.5rem;
+    }
+    body:not(.landing-page) .chaotic-menu {
+        padding: 4.5rem 0;
+    }
+
     .container {
         flex-direction: column;
         padding-top: 3rem;
@@ -632,6 +627,12 @@ body.stay-in-touch-page {
         gap: 1rem;
         order: 2; /* nav sits below the content, full width */
     }
+    .chaotic-menu .menu-item:first-child {
+        transform: translateX(-20px);
+    }
+    .chaotic-menu .menu-item:nth-child(2) {
+        margin-top: 2rem;
+    }
     .content-area {
         width: 100%;
         align-items: center;
@@ -650,6 +651,69 @@ body.stay-in-touch-page {
     .hero-text {
         align-items: center;
         margin-top: 0;
+    }
+    body:not(.landing-page) .hero-text {
+        align-items: flex-end;
+        width: 100%;
+    }
+    #bottomBar {
+        position: static;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 1.25rem 1.25rem;
+    }
+    body.landing-page #bottomBar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 200;
+    }
+    #chumBtn {
+        position: static;
+        margin: 0;
+        padding: 0.3rem 0.9rem;
+        font-size: 1rem;
+        height: auto;
+        width: auto;
+        align-self: center;
+        order: -1;
+    }
+    #socialBar {
+        position: static;
+        bottom: auto;
+        right: auto;
+        align-self: center;
+    }
+    body.landing-page {
+        overflow: hidden;
+        height: 100dvh;
+    }
+    body.landing-page .container {
+        height: 100dvh;
+        min-height: unset;
+        padding-top: 0;
+        top: 0;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        overflow: hidden;
+    }
+    body.landing-page .hero-text {
+        display: none;
+    }
+    body.landing-page .chaotic-menu {
+        padding-top: 0;
+    }
+    body.landing-page .radio-play {
+        width: 200px;
+        height: 200px;
+    }
+    body.landing-page .content-area {
+        width: auto;
+        margin-left: -2rem;
     }
     .text-content {
         padding: 1.5rem;
@@ -713,16 +777,22 @@ body.stay-in-touch-page {
     max-width: 100% !important;
 }
 
-.ml-embedded input[type="email"], 
+.ml-embedded input[type="email"],
 .ml-embedded input[type="text"] {
     padding: 1rem !important;
     font-family: 'Courier Prime', monospace !important;
     border: 2px solid var(--text-color) !important;
     background: var(--bg-color) !important;
     font-size: 1.25rem !important;
+    line-height: 1 !important;
     color: var(--text-color) !important;
     box-shadow: none !important;
     border-radius: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.ml-embedded .ml-form-embedSubmit {
     width: 100% !important;
     box-sizing: border-box !important;
 }
@@ -739,8 +809,118 @@ body.stay-in-touch-page {
     border-radius: 0 !important;
     margin-top: 1rem !important;
     width: 100% !important;
+    box-sizing: border-box !important;
+    line-height: 1 !important;
 }
 
 .ml-embedded button:hover {
+    transform: scale(1.05) !important;
+}
+
+/* --- Bottom bar: wraps chum + social icons. display:contents on desktop so
+      fixed-positioned children act as direct body children; fixed row on mobile. --- */
+/* Nav lines extend to the right until covered by the content area (z-index: 60 > nav z-index: 50) */
+@media (min-width: 769px) {
+    .has-line::before,
+    .has-lines-tb::before,
+    .has-lines-tb::after {
+        right: -100vw;
+    }
+    .has-line-bottom::after {
+        right: -100vw;
+    }
+}
+
+@media (min-width: 769px) {
+    #bottomBar {
+        display: contents;
+    }
+}
+
+/* --- Social icons --- */
+#socialBar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+@media (min-width: 769px) {
+    #socialBar {
+        position: fixed;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        z-index: 200;
+    }
+}
+
+.social-email {
+    font-family: 'LobbyCard', monospace;
+    font-size: 1.2rem;
+    color: var(--text-color);
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+}
+
+.social-email:hover {
+    opacity: 0.7;
+}
+
+.social-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--text-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+}
+
+.social-icon:hover {
+    transform: scale(1.1);
+}
+
+.social-icon svg {
+    width: 55%;
+    height: 55%;
+    fill: var(--bg-color);
+}
+
+@media (max-width: 768px) {
+    .social-icon {
+        width: 38px;
+        height: 38px;
+    }
+}
+
+.volunteer-label {
+    display: block !important;
+    margin-top: 2rem;
+    margin-bottom: 0;
+}
+
+.volunteer-btn {
+    display: block !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    text-decoration: none !important;
+    text-align: center !important;
+    padding: 1rem !important;
+    font-family: 'LobbyCard', monospace !important;
+    font-size: 2.5rem !important;
+    border: 2px solid var(--text-color) !important;
+    background: var(--text-color) !important;
+    color: var(--bg-color) !important;
+    cursor: pointer !important;
+    transition: transform 0.2s ease !important;
+    border-radius: 0 !important;
+    margin-top: 1rem !important;
+    line-height: 1 !important;
+}
+
+.volunteer-btn:hover {
     transform: scale(1.05) !important;
 }
