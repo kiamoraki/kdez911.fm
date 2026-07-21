@@ -31,7 +31,7 @@ body {
 }
 
 body.landing-page {
-    background-image: linear-gradient(var(--tod-overlay), var(--tod-overlay)), url('img/kdez_main/KDEZ_MAIN_HORIZONTAL.webp');
+    background-image: linear-gradient(var(--tod-overlay), var(--tod-overlay)), url('img/KDEZ_MAIN_HORIZONTAL.webp');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -39,7 +39,7 @@ body.landing-page {
 }
 
 body.about-page {
-    background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('img/VOSS_ABOUT/VOSS_BOTTLE_EXTRA%20WIDE.webp');
+    background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('img/VOSS_BOTTLE_EXTRA_WIDE.webp');
     background-size: cover;
     background-position: center bottom;
     background-attachment: fixed;
@@ -47,7 +47,7 @@ body.about-page {
 }
 
 body.donate-page {
-    background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('img/TOWER_DONATE/KDEZ%20Tower_Extra%20Wide.webp');
+    background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('img/KDEZ_Tower_Extra_Wide.webp');
     background-size: cover;
     background-position: center bottom;
     background-attachment: fixed;
@@ -55,7 +55,7 @@ body.donate-page {
 }
 
 body.stay-in-touch-page {
-    background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('img/SLABS_DROP%20IN/KDEZ_SLABS_HORIZONTAL_WIDE.webp');
+    background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('img/KDEZ_SLABS_HORIZONTAL_WIDE.webp');
     background-size: cover;
     background-position: center bottom;
     background-attachment: fixed;
@@ -66,7 +66,7 @@ body.stay-in-touch-page {
     display: flex;
     width: 100%;
     max-width: 1200px;
-    padding: 2rem;
+    padding: 0;
     position: relative;
     top: 3rem; /* shift all page content down a bit (every page) */
     min-height: 100vh;
@@ -102,6 +102,19 @@ body.stay-in-touch-page {
     71%  { background: #1ca06e; }
     86%  { background: #191eec; }
     100% { background: #ff45e6; }
+}
+
+.fish-ghost {
+    position: absolute;
+    -webkit-mask-image: url('fish.svg');
+    mask-image: url('fish.svg');
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-mode: alpha;
+    mask-mode: alpha;
+    animation: rainbow-glitch 0.6s steps(1, end) infinite;
 }
 
 /* --- Fish jump layer (landing page) ---
@@ -161,7 +174,7 @@ body.stay-in-touch-page {
 /* Desktop: the chum button becomes a bucket icon, centered under the logo */
 @media (min-width: 769px) {
     #chumBtn {
-        left: 0.5rem;
+        left: 1.5rem;
         transform: none;
         bottom: 1rem;
         width: 80px;
@@ -194,7 +207,7 @@ body.stay-in-touch-page {
         transform: translateY(-50%);
         text-align: center;
         color: var(--text-color);
-        font-size: 13px;
+        font-size: 10px;
         letter-spacing: 0;
         pointer-events: none;
         z-index: 2;
@@ -215,8 +228,8 @@ body.stay-in-touch-page {
     flex-direction: column;
     justify-content: center;
     width: 50%;
-    gap: 1.5rem;
-    padding: 2.5rem 0;
+    gap: 0.5rem;
+    padding: 0;
 }
 
 .menu-item {
@@ -236,6 +249,7 @@ body.stay-in-touch-page {
 .menu-item[aria-current="page"] {
     color: var(--text-color);
 }
+
 
 .size-l {
     font-size: 2rem;
@@ -269,12 +283,12 @@ body.stay-in-touch-page {
     position: absolute;
     top: 50%;
     left: -20px;
-    right: -40px;
+    right: -9999px;
     height: 2px;
     background-color: var(--text-color);
     opacity: 1;
     transform: rotate(1deg);
-    z-index: -1;
+    z-index: 0;
 }
 
 .has-line-bottom::after {
@@ -282,7 +296,7 @@ body.stay-in-touch-page {
     position: absolute;
     bottom: -10px;
     left: -10px;
-    right: -20px;
+    right: -9999px;
     height: 2px;
     background-color: var(--text-color);
     opacity: 1;
@@ -294,7 +308,7 @@ body.stay-in-touch-page {
     position: absolute;
     top: -5px;
     left: -30px;
-    right: -10px;
+    right: -9999px;
     height: 2px;
     background-color: var(--text-color);
     opacity: 1;
@@ -306,7 +320,7 @@ body.stay-in-touch-page {
     position: absolute;
     bottom: -5px;
     left: -10px;
-    right: -20px;
+    right: -9999px;
     height: 2px;
     background-color: var(--text-color);
     opacity: 1;
@@ -321,7 +335,7 @@ body.stay-in-touch-page {
     align-items: flex-end;
     width: 50%;
     position: relative;
-    padding-right: 4rem;
+    padding-right: 6.5rem;
     margin-top: 5rem;
 }
 
@@ -334,12 +348,14 @@ body.stay-in-touch-page {
 @media (min-width: 769px) {
     .container {
         display: grid;
-        grid-template-columns: 1fr calc(600px + 4rem); /* right column fits a fixed 600px box (+ its 4rem padding) */
+        grid-template-columns: calc(2rem + 10px) 1fr calc(600px + 6.5rem); /* col1: logo gutter | col2: nav | col3: hero+content */
+        grid-template-rows: 10rem auto;
         align-content: start;
         top: 0; /* override the base shift */
         padding-top: 10.5rem; /* begin below the logo (top 2rem + ~125px tall) */
     }
     body.landing-page .container {
+        grid-template-columns: calc(2rem + 10px) 1fr calc(400px + 6.5rem);
         align-content: center;
         padding-top: 0;
     }
@@ -350,7 +366,7 @@ body.stay-in-touch-page {
         margin-top: 0;
     }
     .container > .hero-text {
-        grid-column: 2;
+        grid-column: 3;
         grid-row: 1;
         align-items: flex-end;
         margin: 0;
@@ -358,10 +374,12 @@ body.stay-in-touch-page {
     }
     body:not(.landing-page) .container {
         padding-top: 0;
+        align-content: start;
     }
     body:not(.landing-page) .container > .hero-text {
-        align-items: flex-end;
-        padding-right: 120px;
+        align-items: flex-start;
+        align-self: end;
+        padding-right: 6.5rem;
     }
     body:not(.landing-page) .container > .content-area {
         grid-row: 2;
@@ -369,46 +387,46 @@ body.stay-in-touch-page {
     }
     body:not(.landing-page) .content-area .text-content {
         width: auto;
-        font-size: 0.875rem;
+        font-size: 0.75rem;
         line-height: 1.45;
         padding: 1.25rem 1.5rem;
-        border-width: 1.5px;
-        max-height: calc(100vh - 240px);
+        border-width: 2px;
+        max-height: calc(100vh - 160px);
         overflow-y: auto;
+        background: rgba(226, 200, 152, 0.88);
     }
     body:not(.landing-page) .content-area .text-content p {
-        margin-bottom: 0.75rem;
+        margin-bottom: 0.5rem;
     }
     .container > .chaotic-menu {
-        position: fixed;
-        left: 0;
-        right: calc(600px + 4rem);
-        top: 0;
-        bottom: 0;
-        height: auto;
-        width: auto;
+        grid-column: 2;
+        grid-row: 1 / -1;
+        position: sticky;
+        height: 100vh;
+        width: 100%;
         margin: 0;
+        margin-top: -40px;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         z-index: 50;
-        overflow: hidden;
+        contain: paint;
     }
     .container > .content-area {
-        grid-column: 2;
+        grid-column: 3;
         grid-row: 2;
         margin-top: 1rem;   /* box top 1rem above the nav's top */
         width: auto;
         align-self: start;
         position: relative;
-        z-index: 60; /* above the fixed nav (z-index: 50) so text boxes cover the nav lines */
+        z-index: 60; /* above the nav (z-index: 50) so text boxes cover the nav lines */
     }
     .content-area .player-content {
-        margin-top: 2rem;   /* match the text boxes on the other pages (beats base .player-content) */
+        margin-top: 0;
     }
     .content-area .text-content {
-        width: 600px;       /* fixed 600px; never scales below it on desktop */
+        width: 600px;
         max-width: 600px;
     }
     .yellow-scratch,
@@ -427,9 +445,8 @@ body.stay-in-touch-page {
 
 .text-content {
     font-family: 'Courier Prime', monospace;
-    font-size: 1rem;
+    font-size: 0.65rem;
     max-width: 600px;
-    margin-top: 2rem;
     line-height: 1.6;
     background: rgba(226, 200, 152, 0.75);
     padding: 2rem;
@@ -437,7 +454,7 @@ body.stay-in-touch-page {
 }
 
 .text-content p {
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
 }
 
 .text-content ul {
@@ -446,7 +463,7 @@ body.stay-in-touch-page {
 }
 
 .yellow-scratch {
-    color: var(--accent-color);
+    color: var(--text-color);
     font-size: 3.5rem;
     letter-spacing: -3px;
     transform: translateY(20px) translateX(-20px) rotate(-3deg);
@@ -456,7 +473,7 @@ body.stay-in-touch-page {
 .black-scratch {
     color: var(--text-color);
     font-size: 4.5rem;
-    letter-spacing: -5px;
+    letter-spacing: -3px;
     z-index: 1;
 }
 
@@ -483,6 +500,7 @@ body.stay-in-touch-page {
 /* --- Custom radio player (big play button + volume) --- */
 .radio-player {
     flex: 1;
+    margin-top: -20px;
     min-height: 150px; /* keep the same box height as the old iframe */
     display: flex;
     flex-direction: column;
@@ -544,8 +562,8 @@ body.landing-page .radio-play:hover {
 /* --- Persistent mini player (shown on every page except the landing hero) --- */
 #miniPlayer {
     position: fixed;
-    top: 2rem;
-    right: 4rem;
+    top: 0;
+    right: 2rem;
     z-index: 200;
     display: flex;
     align-items: center;
@@ -603,14 +621,9 @@ body.landing-page .radio-play:hover {
         left: 0;
         right: 0;
         height: 120px;
-        background-image: linear-gradient(var(--tod-overlay), var(--tod-overlay)), url('SCOTT_LONDON_0733-1-2.jpg');
-        background-attachment: fixed;
-        background-position: 20% center;
-        background-size: cover;
+        background: linear-gradient(to bottom, var(--bg-color) 0%, transparent 100%);
         z-index: 95;
         pointer-events: none;
-        -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
-        mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
     }
 
     /* Subpages: body is a flex column so #bottomBar is pushed to the true page bottom */
@@ -635,18 +648,22 @@ body.landing-page .radio-play:hover {
        used across the whole site, shifted left to show more of the water edge. */
     body.landing-page,
     body.about-page {
-        background-image: linear-gradient(var(--tod-overlay), var(--tod-overlay)), url('img/VOSS_ABOUT/VOSS_BOTTLE_EXTRA%20WIDE.webp');
+        background-image: linear-gradient(var(--tod-overlay), var(--tod-overlay)), url('img/VOSS_BOTTLE_EXTRA_WIDE.webp');
         background-size: cover;
         background-position: center bottom;
+        background-attachment: scroll;
     }
     body.donate-page {
-        background-image: linear-gradient(var(--tod-overlay), var(--tod-overlay)), url('img/TOWER_DONATE/KDEZ%20Tower_Extra%20Wide.webp');
+        background-image: linear-gradient(var(--tod-overlay), var(--tod-overlay)), url('img/KDEZ_Tower_Extra_Wide.webp');
         background-size: cover;
         background-position: center bottom;
+        background-attachment: scroll;
     }
     body.stay-in-touch-page {
-        background-image: linear-gradient(var(--tod-overlay), var(--tod-overlay)), url('img/VOSS_ABOUT/VOSS_BOTTLE_EXTRA%20WIDE.webp');
+        background-image: linear-gradient(var(--tod-overlay), var(--tod-overlay)), url('img/VOSS_BOTTLE_EXTRA_WIDE.webp');
+        background-size: cover;
         background-position: center;
+        background-attachment: scroll;
     }
     .content-wrapper {
         flex-direction: column;
@@ -780,36 +797,59 @@ body.landing-page .radio-play:hover {
         font-size: 2rem !important; /* Scale down slightly on mobile */
     }
 }
+/* Logo sizing — driven by body class so the SPA page swap triggers the resize */
+a[href="index.html"] img {
+    max-width: 180px;
+    height: auto;
+    transition: max-width 0.4s ease;
+}
+body.landing-page a[href="index.html"] img {
+    max-width: 250px;
+}
+
 /* --- Global Utilities --- */
 .form-style-btn:hover {
     transform: scale(1.05) !important;
 }
 
-/* --- MailerLite Custom Styling --- */
-.ml-embedded, .ml-embedded form, .ml-embedded div, .ml-embedded *,
-[id^="mlb2-"], [id^="mlb2-"] *, .ml-form-embedContainer, .ml-form-align-center, .ml-form-embedWrapper {
+/* --- Kit (ConvertKit) form styling — matches KDEZ house style --- */
+
+.kit-embedded,
+.kit-embedded *,
+.kit-embedded .formkit-form,
+.kit-embedded [data-style="clean"] {
     background-color: transparent !important;
     color: var(--text-color) !important;
     font-family: 'Courier Prime', monospace !important;
-}
-
-.ml-embedded h1, .ml-embedded h2, .ml-embedded h3, .ml-embedded h4, .ml-embedded p, [id^="mlb2-"] h1, [id^="mlb2-"] h2, [id^="mlb2-"] h3, [id^="mlb2-"] h4, [id^="mlb2-"] p {
-    display: none !important;
-}
-
-.ml-embedded .ml-form-embedWrapper {
+    max-width: 100% !important;
     padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
 }
 
-.ml-embedded form {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 1rem !important;
+.kit-embedded .formkit-form,
+.kit-embedded .seva-form {
+    width: 100% !important;
     max-width: 100% !important;
 }
 
-.ml-embedded input[type="email"],
-.ml-embedded input[type="text"] {
+.kit-embedded .formkit-fields,
+.kit-embedded .seva-fields {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.kit-embedded .formkit-field {
+    margin: 0 !important;
+    flex: 1 0 100% !important;
+    padding: 0 !important;
+}
+
+.kit-embedded .formkit-input,
+.kit-embedded input[type="email"] {
     padding: 1rem !important;
     font-family: 'Courier Prime', monospace !important;
     border: 2px solid var(--text-color) !important;
@@ -821,45 +861,116 @@ body.landing-page .radio-play:hover {
     border-radius: 0 !important;
     width: 100% !important;
     box-sizing: border-box !important;
+    margin: 0 !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
 }
 
-.ml-embedded .ml-form-embedSubmit {
-    width: 100% !important;
-    box-sizing: border-box !important;
+.kit-embedded .formkit-input:focus,
+.kit-embedded input[type="email"]:focus {
+    outline: 2px solid var(--text-color) !important;
+    outline-offset: 2px !important;
+    border-color: var(--text-color) !important;
 }
 
-.ml-embedded button {
-    padding: 1rem !important;
+.kit-embedded .formkit-input::placeholder {
+    color: var(--text-color) !important;
+    opacity: 0.55 !important;
+}
+
+.kit-embedded .formkit-submit,
+.kit-embedded button[data-element="submit"] {
+    padding: 0.71rem !important;
     font-family: 'LobbyCard', monospace !important;
-    font-size: 2.5rem !important;
+    font-size: 2rem !important;
     border: 2px solid var(--text-color) !important;
     background: var(--text-color) !important;
     color: var(--bg-color) !important;
     cursor: pointer !important;
     transition: transform 0.2s ease !important;
     border-radius: 0 !important;
-    margin-top: 1rem !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
     width: 100% !important;
     box-sizing: border-box !important;
     line-height: 1 !important;
+    display: block !important;
+    position: relative !important;
+    overflow: hidden !important;
+    text-align: center !important;
+    flex: 1 0 100% !important;
 }
 
-.ml-embedded button:hover {
+.kit-embedded .formkit-submit:hover,
+.kit-embedded button[data-element="submit"]:hover {
     transform: scale(1.05) !important;
+    background: var(--text-color) !important;
+    color: var(--bg-color) !important;
+}
+
+.kit-embedded .formkit-submit > span,
+.kit-embedded button[data-element="submit"] > span {
+    display: inline-block !important;
+    padding: 0 !important;
+    background-color: transparent !important;
+    color: var(--bg-color) !important;
+    font-family: 'LobbyCard', monospace !important;
+    font-size: 2rem !important;
+    line-height: 1 !important;
+}
+
+.kit-embedded .formkit-submit:hover > span {
+    background-color: transparent !important;
+}
+
+.kit-embedded .formkit-spinner > div {
+    background-color: var(--bg-color) !important;
+}
+
+.kit-embedded .formkit-alert {
+    font-family: 'Courier Prime', monospace !important;
+    background: transparent !important;
+    border: none !important;
+    color: var(--text-color) !important;
+    padding: 0 !important;
+    margin: 0 0 1rem 0 !important;
+    text-align: left !important;
+    list-style: none !important;
+    font-size: 1rem !important;
+}
+
+.kit-embedded .formkit-alert:empty {
+    display: none !important;
+}
+
+.kit-embedded .formkit-powered-by-convertkit-container,
+.kit-embedded .formkit-powered-by-convertkit,
+.kit-embedded a[data-element="powered-by"] {
+    display: none !important;
+}
+
+.kit-embedded h1,
+.kit-embedded h2,
+.kit-embedded h3,
+.kit-embedded h4,
+.kit-embedded .formkit-header,
+.kit-embedded .formkit-subheader {
+    display: none !important;
 }
 
 /* --- Bottom bar: wraps chum + social icons. display:contents on desktop so
       fixed-positioned children act as direct body children; fixed row on mobile. --- */
-/* Nav lines extend to the right until covered by the content area (z-index: 60 > nav z-index: 50) */
+/* Nav lines extend right; JS clips them at the radio-player circle on the homepage */
 @media (min-width: 769px) {
-    .has-line::before,
-    .has-lines-tb::before,
-    .has-lines-tb::after {
-        right: -100vw;
-    }
-    .has-line-bottom::after {
-        right: -100vw;
-    }
+    .has-line::before     { right: var(--line-stop-mid,    -100vw); }
+    .has-line-bottom::after { right: var(--line-stop-bottom, -100vw); }
+    .has-lines-tb::before { right: var(--line-stop-top,    -100vw); }
+    .has-lines-tb::after  { right: var(--line-stop-bottom, -100vw); }
+    /* Per-line fine-tuning on the homepage only */
+    body.landing-page .chaotic-menu .menu-item:first-child::before  { right: calc(var(--line-stop-mid,    -100vw) + 6px); }
+    body.landing-page .chaotic-menu .menu-item:nth-child(2)::before { right: calc(var(--line-stop-top,    -100vw) + 9px); }
+    body.landing-page .chaotic-menu .menu-item:nth-child(2)::after  { right: calc(var(--line-stop-bottom, -100vw) + 0px); }
+    body.landing-page .chaotic-menu .menu-item:nth-child(3)::after  { right: calc(var(--line-stop-bottom, -100vw) - 2px); }
 }
 
 @media (min-width: 769px) {
@@ -990,15 +1101,15 @@ body.landing-page .radio-play:hover {
 
 @media (orientation: portrait) {
     body.landing-page {
-        background-image: linear-gradient(var(--tod-overlay), var(--tod-overlay)), url('img/kdez_main/KDEZ_MAIN_VERTICAL_1.webp');
+        background-image: linear-gradient(var(--tod-overlay), var(--tod-overlay)), url('img/KDEZ_MAIN_VERTICAL_1.webp');
     }
     body.about-page {
-        background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('img/VOSS_ABOUT/KDEZ_VOSS_VERTICAL_WIDE.webp');
+        background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('img/KDEZ_VOSS_VERTICAL_WIDE.webp');
     }
     body.donate-page {
-        background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('img/TOWER_DONATE/KDEZ%20Tower_Vertical_Expanded.webp');
+        background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('img/KDEZ_Tower_Vertical_Expanded.webp');
     }
     body.stay-in-touch-page {
-        background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('img/SLABS_DROP%20IN/KDEZ_SLABS_VERTICAL.webp');
+        background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('img/KDEZ_SLABS_VERTICAL.webp');
     }
 }

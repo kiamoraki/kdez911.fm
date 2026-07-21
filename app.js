@@ -293,7 +293,7 @@
             };
         }
 
-        var _maskSrc = 'img/kdez_main/KDEZ_MAIN_HORIZONTAL-mask.png';
+        var _maskSrc = 'img/KDEZ_MAIN_HORIZONTAL-mask.png';
         var water = makeMask(_maskSrc, false);   // opaque black = fish zone
         var gifMask = makeMask(_maskSrc, false); // opaque black = rainbow pixel zone
 
@@ -382,7 +382,7 @@
         (function () {
             var layer = layerFish;
             var FISH_SRC = 'fish.svg', HEAD_RIGHT = true;
-            var MAX_FISH = 2, FRENZY_FISH = 30;
+            var MAX_FISH = 2, FRENZY_FISH = 60;
             function rand(a, b) { return Math.random() * (b - a) + a; }
             var started = false, active = 0, fishAspect = 1.7;
             var chum = [];        // rainbow pixels the fish are eating
@@ -452,8 +452,11 @@
                     for (var j = 0; j < burst.length; j++) burst[j].style.transform = 'translate(0,0) scale(1)';
                 });
                 frenzy = true;
-                // immediate burst so it explodes into a frenzy instead of ramping up
-                for (var k = 0; k < 14 && active < FRENZY_FISH; k++) jump();
+                for (var k = 0; k < 8; k++) {
+                    (function (delay) {
+                        setTimeout(function () { if (frenzy && active < FRENZY_FISH) jump(); }, delay);
+                    }(k * rand(200, 500)));
+                }
             }
             // Attention teaser: if nobody clicks the bucket, give it a shake and let a
             // single pellet fly out for one fish to snap up — a hint at what CHUM does.
@@ -506,13 +509,14 @@
                 img.style.width = fw + 'px'; img.style.height = fh + 'px';
                 layer.appendChild(img); active++;
                 var dist = Math.sqrt((B.x - A.x) * (B.x - A.x) + (B.y - A.y) * (B.y - A.y));
-                var arc = Math.min(360, Math.max(120, dist * 0.5));
-                var dur = targetEl ? rand(1100, 1900) : rand(2300, 3300); // frenzy jumps are quicker
+                var arc = Math.min(280, Math.max(80, dist * 0.42));
+                var dur = targetEl ? rand(1500, 2400) : rand(2500, 3500); // frenzy jumps are quicker
                 var EM = 0.16, SUB = 0.16, start = null, ate = false;
+                var rainbow = null;
                 function frame(ts) {
                     if (start === null) start = ts;
                     var t = (ts - start) / dur;
-                    if (t >= 1) { img.remove(); active--; return; }
+                    if (t >= 1) { if (rainbow) rainbow.remove(); img.remove(); active--; return; }
                     var x = A.x + (B.x - A.x) * t;
                     var y = (A.y + (B.y - A.y) * t) - arc * Math.sin(Math.PI * t);
                     var vx = (B.x - A.x);
@@ -533,11 +537,31 @@
                     // can't skip past one between frames
                     if (targetEl && !ate) {
                         var vlen = Math.sqrt(vx * vx + vy * vy) || 1;
-                        var noseX = x + (fw * 0.42) * (vx / vlen);
-                        var noseY = y + (fw * 0.42) * (vy / vlen);
+                        var noseX = x + (fw * 0.35) * (vx / vlen);
+                        var noseY = y + (fw * 0.35) * (vy / vlen);
                         var dnx = noseX - B.x, dny = noseY - B.y;
-                        var hitR = (targetEl._size || 10) / 2 + 4;
-                        if (dnx * dnx + dny * dny < hitR * hitR || t > 0.98) { targetEl.remove(); ate = true; }
+                        var hitR = (targetEl._size || 10) / 2;
+                        if (dnx * dnx + dny * dny < hitR * hitR || t > 0.98) {
+                            targetEl.remove();
+                            ate = true;
+                            img.style.opacity = '0';
+                            rainbow = document.createElement('div');
+                            rainbow.className = 'fish-ghost';
+                            rainbow.style.width = fw + 'px';
+                            rainbow.style.height = fh + 'px';
+                            var eatAngle = vx >= 0
+                                ? (Math.atan2(vy, vx) * 180 / Math.PI)
+                                : (Math.atan2(-vy, -vx) * 180 / Math.PI);
+                            rainbow.style.transform = 'rotate(' + eatAngle.toFixed(1) + 'deg)' + (vx < 0 ? ' scaleX(-1)' : '');
+                            rainbow.style.animationDuration = rand(0.3, 0.7).toFixed(2) + 's';
+                            rainbow.style.animationDelay = (-rand(0, 800)).toFixed(0) + 'ms';
+                            layer.appendChild(rainbow);
+                        }
+                    }
+                    if (rainbow) {
+                        rainbow.style.left = (x - fw / 2) + 'px';
+                        rainbow.style.top  = (y - fh / 2) + 'px';
+                        rainbow.style.opacity = t > 1 - SUB ? ((1 - t) / SUB).toFixed(3) : '1';
                     }
                     requestAnimationFrame(frame);
                 }
@@ -561,14 +585,14 @@
                 }
                 var A = water.pickInside(map);
                 if (!A) return;
-                var B = pickPointNear(map, A, map.W * 0.18, map.W * 0.36) || pickPointNear(map, A, map.W * 0.11, map.W * 0.20);
+                var B = pickPointNear(map, A, map.W * 0.28, map.W * 0.50) || pickPointNear(map, A, map.W * 0.18, map.W * 0.36);
                 if (!B) return;
                 animateJump(A, B, map, null);
             }
             function tryJump() {
                 var cap = frenzy ? FRENZY_FISH : MAX_FISH;
                 if (active < cap) jump();
-                setTimeout(tryJump, frenzy ? rand(70, 200) : rand(1400, 3800));
+                setTimeout(tryJump, frenzy ? rand(250, 600) : rand(1400, 3800));
             }
             function startLoop() {
                 if (started) return;
@@ -584,8 +608,8 @@
                 btn.type = 'button';
                 btn.innerHTML =
                     '<svg class="chum-bucket" viewBox="0 0 24 24" aria-hidden="true">' +
-                        '<path class="chum-handle" d="M6 7 Q12 -1 18 7" fill="none" stroke="currentColor" stroke-width="0.7" stroke-linecap="round"/>' +
-                        '<path class="chum-body" d="M5.1 7 L18.9 7 Q19.7 7 19.5 7.8 L17 20.7 Q16.8 21.5 16 21.5 L8 21.5 Q7.2 21.5 7 20.7 L4.5 7.8 Q4.3 7 5.1 7 Z" stroke="currentColor" stroke-width="0.7"/>' +
+                        '<path class="chum-handle" d="M6 7 Q12 -1 18 7" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>' +
+                        '<path class="chum-body" d="M5.1 7 L18.9 7 Q19.7 7 19.5 7.8 L17 20.7 Q16.8 21.5 16 21.5 L8 21.5 Q7.2 21.5 7 20.7 L4.5 7.8 Q4.3 7 5.1 7 Z" stroke="currentColor" stroke-width="1"/>' +
                     '</svg>' +
                     '<span class="chum-label">CHUM</span>';
                 btn.setAttribute('aria-label', 'Release chum — feeding frenzy');
@@ -799,6 +823,7 @@
         updateMiniVisibility();
         syncUI();
         markActiveNav();
+        window.dispatchEvent(new CustomEvent('kdez:nav-swapped'));
     }
 
     function navigate(url, push) {
@@ -829,4 +854,103 @@
     }
     if (document.readyState !== 'loading') init();
     else document.addEventListener('DOMContentLoaded', init);
+})();
+
+// Clip nav lines at the radio-player circle (homepage) or text-content left edge (subpages).
+(function () {
+    // Cache the homepage stop values from the first load so SPA nav back restores
+    // the exact same positions rather than recomputing from a different layout state.
+    var homepageCache = null; // array of { prop: value } indexed by menu-item order
+
+    function computeHomepage(btn) {
+        var br = btn.getBoundingClientRect();
+        var cx = br.left + br.width / 2;
+        var cy = br.top  + br.height / 2;
+        var r  = br.width / 2;
+        var cache = [];
+
+        document.querySelectorAll('.menu-item').forEach(function (item, i) {
+            var ir = item.getBoundingClientRect();
+            var stops = {};
+
+            function setStop(prop, lineY) {
+                var dy = lineY - cy;
+                if (Math.abs(dy) < r) {
+                    var ix = cx - Math.sqrt(r * r - dy * dy);
+                    var extend = 8 + (Math.abs(dy) / r) * 38;
+                    stops[prop] = (ir.right - ix - extend).toFixed(1) + 'px';
+                    item.style.setProperty(prop, stops[prop]);
+                } else {
+                    stops[prop] = null;
+                    item.style.removeProperty(prop);
+                }
+            }
+
+            if (item.classList.contains('has-line'))
+                setStop('--line-stop-mid',    ir.top + ir.height / 2);
+            if (item.classList.contains('has-line-bottom'))
+                setStop('--line-stop-bottom', ir.bottom - 10);
+            if (item.classList.contains('has-lines-tb')) {
+                setStop('--line-stop-top',    ir.top    - 5);
+                setStop('--line-stop-bottom', ir.bottom - 5);
+            }
+            cache[i] = stops;
+        });
+
+        homepageCache = cache;
+    }
+
+    function restoreHomepage() {
+        document.querySelectorAll('.menu-item').forEach(function (item, i) {
+            var stops = homepageCache[i];
+            if (!stops) return;
+            for (var prop in stops) {
+                if (stops[prop] !== null) item.style.setProperty(prop, stops[prop]);
+                else item.style.removeProperty(prop);
+            }
+        });
+    }
+
+    function clipLines() {
+        var btn = document.getElementById('radioToggle');
+
+        if (!btn) {
+            // Subpages: stop lines at the left edge of the text-content box.
+            var tc = document.querySelector('.content-area .text-content');
+            if (!tc) return;
+            var stopX = tc.getBoundingClientRect().left;
+            document.querySelectorAll('.menu-item').forEach(function (item) {
+                var ir = item.getBoundingClientRect();
+                var val = (ir.right - stopX).toFixed(1) + 'px';
+                if (item.classList.contains('has-line'))
+                    item.style.setProperty('--line-stop-mid',    val);
+                if (item.classList.contains('has-line-bottom'))
+                    item.style.setProperty('--line-stop-bottom', val);
+                if (item.classList.contains('has-lines-tb')) {
+                    item.style.setProperty('--line-stop-top',    val);
+                    item.style.setProperty('--line-stop-bottom', val);
+                }
+            });
+            return;
+        }
+
+        // Homepage: restore cached values if available, else compute & cache.
+        if (homepageCache) {
+            restoreHomepage();
+        } else {
+            computeHomepage(btn);
+        }
+    }
+
+    function setup() {
+        clipLines();
+        window.addEventListener('resize', function () {
+            homepageCache = null; // invalidate so next homepage visit recomputes
+            clipLines();
+        });
+        window.addEventListener('kdez:nav-swapped', function () { clipLines(); });
+    }
+
+    if (document.readyState !== 'loading') setup();
+    else document.addEventListener('DOMContentLoaded', setup);
 })();
