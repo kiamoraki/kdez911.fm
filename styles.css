@@ -31,7 +31,7 @@ body {
 }
 
 body.landing-page {
-    background-image: linear-gradient(var(--tod-overlay), var(--tod-overlay)), url('SCOTT_LONDON_0733-1-2.jpg');
+    background-image: linear-gradient(var(--tod-overlay), var(--tod-overlay)), url('img/kdez_main/KDEZ_MAIN_HORIZONTAL.webp');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -39,23 +39,23 @@ body.landing-page {
 }
 
 body.about-page {
-    background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('VOSS_AMBIENCE-1.jpg');
+    background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('img/VOSS_ABOUT/VOSS_BOTTLE_EXTRA%20WIDE.webp');
     background-size: cover;
-    background-position: left center;
+    background-position: center bottom;
     background-attachment: fixed;
     background-color: var(--bg-color);
 }
 
 body.donate-page {
-    background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('KDEZ_Donate.jpg');
+    background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('img/TOWER_DONATE/KDEZ%20Tower_Extra%20Wide.webp');
     background-size: cover;
-    background-position: left bottom; /* keep the bottom-left on screen; crop top & right */
+    background-position: center bottom;
     background-attachment: fixed;
     background-color: var(--bg-color);
 }
 
 body.stay-in-touch-page {
-    background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('SLABS_KDEZ.jpg');
+    background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('img/SLABS_DROP%20IN/KDEZ_SLABS_HORIZONTAL_WIDE.webp');
     background-size: cover;
     background-position: center bottom;
     background-attachment: fixed;
@@ -161,18 +161,18 @@ body.stay-in-touch-page {
 /* Desktop: the chum button becomes a bucket icon, centered under the logo */
 @media (min-width: 769px) {
     #chumBtn {
-        left: calc(100px + 1rem);
-        transform: translateX(-50%);
+        left: 0.5rem;
+        transform: none;
         bottom: 1rem;
-        width: 200px;
-        height: 200px;
+        width: 80px;
+        height: 60px;
         padding: 0;
         background: transparent;
         border: 0;
         color: var(--text-color);
         opacity: 0.92;
     }
-    #chumBtn:hover { transform: translateX(-50%) scale(1.06); }
+    #chumBtn:hover { transform: scale(1.06); }
     /* keep the bucket centered while it shakes */
     @keyframes chum-shake-d {
         0%, 100% { transform: translateX(-50%) rotate(0); }
@@ -188,14 +188,14 @@ body.stay-in-touch-page {
     #chumBtn .chum-label { /* "CHUM" written on the bucket body */
         display: block;
         position: absolute;
-        left: 0;
-        right: 0;
+        left: 19%;
+        right: 19%;
         top: 55%;
         transform: translateY(-50%);
         text-align: center;
         color: var(--text-color);
-        font-size: 2.1rem;
-        letter-spacing: 1px;
+        font-size: 13px;
+        letter-spacing: 0;
         pointer-events: none;
         z-index: 2;
     }
@@ -354,7 +354,30 @@ body.stay-in-touch-page {
         grid-row: 1;
         align-items: flex-end;
         margin: 0;
-        padding-right: 4rem; /* align the heading's right edge with the box */
+        padding-right: 4rem;
+    }
+    body:not(.landing-page) .container {
+        padding-top: 0;
+    }
+    body:not(.landing-page) .container > .hero-text {
+        align-items: flex-end;
+        padding-right: 120px;
+    }
+    body:not(.landing-page) .container > .content-area {
+        grid-row: 2;
+        margin-top: 0;
+    }
+    body:not(.landing-page) .content-area .text-content {
+        width: auto;
+        font-size: 0.875rem;
+        line-height: 1.45;
+        padding: 1.25rem 1.5rem;
+        border-width: 1.5px;
+        max-height: calc(100vh - 240px);
+        overflow-y: auto;
+    }
+    body:not(.landing-page) .content-area .text-content p {
+        margin-bottom: 0.75rem;
     }
     .container > .chaotic-menu {
         position: fixed;
@@ -424,7 +447,7 @@ body.stay-in-touch-page {
 
 .yellow-scratch {
     color: var(--accent-color);
-    font-size: 6rem;
+    font-size: 3.5rem;
     letter-spacing: -3px;
     transform: translateY(20px) translateX(-20px) rotate(-3deg);
     z-index: 2;
@@ -432,7 +455,7 @@ body.stay-in-touch-page {
 
 .black-scratch {
     color: var(--text-color);
-    font-size: 8rem;
+    font-size: 4.5rem;
     letter-spacing: -5px;
     z-index: 1;
 }
@@ -611,11 +634,19 @@ body.landing-page .radio-play:hover {
     /* Mobile: the homepage background (Salton Sea aerial + time-of-day overlay) is
        used across the whole site, shifted left to show more of the water edge. */
     body.landing-page,
-    body.about-page,
-    body.donate-page,
+    body.about-page {
+        background-image: linear-gradient(var(--tod-overlay), var(--tod-overlay)), url('img/VOSS_ABOUT/VOSS_BOTTLE_EXTRA%20WIDE.webp');
+        background-size: cover;
+        background-position: center bottom;
+    }
+    body.donate-page {
+        background-image: linear-gradient(var(--tod-overlay), var(--tod-overlay)), url('img/TOWER_DONATE/KDEZ%20Tower_Extra%20Wide.webp');
+        background-size: cover;
+        background-position: center bottom;
+    }
     body.stay-in-touch-page {
-        background-image: linear-gradient(var(--tod-overlay), var(--tod-overlay)), url('SCOTT_LONDON_0733-1-2.jpg');
-        background-position: 20% center;
+        background-image: linear-gradient(var(--tod-overlay), var(--tod-overlay)), url('img/VOSS_ABOUT/VOSS_BOTTLE_EXTRA%20WIDE.webp');
+        background-position: center;
     }
     .content-wrapper {
         flex-direction: column;
@@ -721,11 +752,11 @@ body.landing-page .radio-play:hover {
         margin-top: 1rem;
     }
     .yellow-scratch {
-        font-size: 4rem;
+        font-size: 2.2rem;
         transform: translateY(10px) translateX(-10px) rotate(-3deg);
     }
     .black-scratch {
-        font-size: 5rem;
+        font-size: 3rem;
     }
     
     /* Make menu smaller on mobile */
@@ -923,4 +954,51 @@ body.landing-page .radio-play:hover {
 
 .volunteer-btn:hover {
     transform: scale(1.05) !important;
+}
+
+/* --- Screen-reader only utility --- */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* --- Page captions (bottom-left, subpages only) --- */
+.page-caption {
+    position: fixed;
+    bottom: 1rem;
+    left: 3rem;
+    font-family: 'Courier Prime', monospace;
+    font-size: 0.72rem;
+    color: var(--text-color);
+    opacity: 1;
+    z-index: 40;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    pointer-events: none;
+}
+
+@media (max-width: 768px) {
+    .page-caption { display: none; }
+}
+
+@media (orientation: portrait) {
+    body.landing-page {
+        background-image: linear-gradient(var(--tod-overlay), var(--tod-overlay)), url('img/kdez_main/KDEZ_MAIN_VERTICAL_1.webp');
+    }
+    body.about-page {
+        background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('img/VOSS_ABOUT/KDEZ_VOSS_VERTICAL_WIDE.webp');
+    }
+    body.donate-page {
+        background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('img/TOWER_DONATE/KDEZ%20Tower_Vertical_Expanded.webp');
+    }
+    body.stay-in-touch-page {
+        background-image: linear-gradient(rgba(226, 200, 152, 0.3), rgba(226, 200, 152, 0.3)), url('img/SLABS_DROP%20IN/KDEZ_SLABS_VERTICAL.webp');
+    }
 }

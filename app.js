@@ -225,8 +225,8 @@
         readBgPos();
         window.addEventListener('resize', readBgPos);
 
-        function makeMask(src) {
-            var BG_W = 2000, BG_H = 1333, MASK_W = 600, MASK_H = 400;
+        function makeMask(src, invert) {
+            var BG_W = 3008, BG_H = 2005, MASK_W = 600, MASK_H = 400;
             var data = null, inside = [], ready = false, cbs = [];
             function rand(a, b) { return Math.random() * (b - a) + a; }
             function mapping() {
@@ -246,13 +246,14 @@
             }
             function alphaAt(mx, my) {
                 mx |= 0; my |= 0;
-                if (!data || mx < 0 || my < 0 || mx >= MASK_W || my >= MASK_H) return 0;
+                if (!data || mx < 0 || my < 0 || mx >= MASK_W || my >= MASK_H) return invert ? 255 : 0;
                 return data[(my * MASK_W + mx) * 4 + 3];
             }
             function isInside(sx, sy) {
                 if (!ready) return false;
                 var m = mapping().toMask(sx, sy);
-                return alphaAt(m.mx, m.my) > 128;
+                var a = alphaAt(m.mx, m.my);
+                return invert ? a <= 128 : a > 128;
             }
             function pickInside(map) {
                 if (!ready) return { x: rand(0, map.W), y: rand(0, map.H) };
@@ -276,8 +277,10 @@
                     data = ctx.getImageData(0, 0, MASK_W, MASK_H).data;
                     var step = 4;
                     for (var y = 0; y < MASK_H; y += step)
-                        for (var x = 0; x < MASK_W; x += step)
-                            if (data[(y * MASK_W + x) * 4 + 3] > 128) inside.push(x, y);
+                        for (var x = 0; x < MASK_W; x += step) {
+                            var a = data[(y * MASK_W + x) * 4 + 3];
+                            if (invert ? a <= 128 : a > 128) inside.push(x, y);
+                        }
                     ready = inside.length > 0;
                 } catch (e) { ready = false; }
                 for (var i = 0; i < cbs.length; i++) cbs[i]();
@@ -290,8 +293,9 @@
             };
         }
 
-        var water = makeMask('SCOTT_LONDON_0733-1-2-controlNetH2O.png');   // fish jump here
-        var gifMask = makeMask('SCOTT_LONDON_0733-1-2-controlNetGIF.png'); // gifs spawn here
+        var _maskSrc = 'img/kdez_main/KDEZ_MAIN_HORIZONTAL-mask.png';
+        var water = makeMask(_maskSrc, false);   // opaque black = fish zone
+        var gifMask = makeMask(_maskSrc, false); // opaque black = rainbow pixel zone
 
         /* Rainbow glitch (land area, never water); the field grows very gradually
            over hours and persists across navigation. */
@@ -425,7 +429,7 @@
                 for (var i = 0; i < 80; i++) {
                     var p = water.pickInside(map);
                     if (!p || p.mx == null) continue;
-                    var size = rand(7, 13);
+                    var size = rand(2, 5);
                     var el = document.createElement('span');
                     el.className = 'glitch-gif';
                     el.style.width = size + 'px';
@@ -494,7 +498,7 @@
                 var img = document.createElement('img');
                 img.src = FISH_SRC; img.alt = ''; img.className = 'fish-jumper';
                 var mobile = window.matchMedia('(max-width: 768px)').matches;
-                var MIN_FW = mobile ? 18 : 36, MAX_FW = mobile ? 52 : 104;
+                var MIN_FW = mobile ? 12 : 24, MAX_FW = mobile ? 36 : 72;
                 var baseY = (A.y + B.y) / 2;
                 var depth = Math.max(0, Math.min(1, baseY / map.H));
                 var fw = (MIN_FW + (MAX_FW - MIN_FW) * depth) * rand(0.92, 1.08);
@@ -581,7 +585,7 @@
                 btn.innerHTML =
                     '<svg class="chum-bucket" viewBox="0 0 24 24" aria-hidden="true">' +
                         '<path class="chum-handle" d="M6 7 Q12 -1 18 7" fill="none" stroke="currentColor" stroke-width="0.7" stroke-linecap="round"/>' +
-                        '<path class="chum-body" d="M5.1 7 L18.9 7 Q19.7 7 19.5 7.8 L17 20.7 Q16.8 21.5 16 21.5 L8 21.5 Q7.2 21.5 7 20.7 L4.5 7.8 Q4.3 7 5.1 7 Z" stroke="currentColor" stroke-width="1.5"/>' +
+                        '<path class="chum-body" d="M5.1 7 L18.9 7 Q19.7 7 19.5 7.8 L17 20.7 Q16.8 21.5 16 21.5 L8 21.5 Q7.2 21.5 7 20.7 L4.5 7.8 Q4.3 7 5.1 7 Z" stroke="currentColor" stroke-width="0.7"/>' +
                     '</svg>' +
                     '<span class="chum-label">CHUM</span>';
                 btn.setAttribute('aria-label', 'Release chum — feeding frenzy');
