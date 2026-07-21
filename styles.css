@@ -612,6 +612,13 @@ body.landing-page .radio-play:hover {
 
 /* Media Query for Mobile */
 @media (max-width: 768px) {
+    body {
+        min-height: 100dvh;
+    }
+    .container {
+        min-height: 100dvh;
+    }
+
     /* Mirror the fixed body background at the top so scrolling content
        fades out behind the logo rather than visually overlapping it. */
     body::before {
@@ -626,11 +633,38 @@ body.landing-page .radio-play:hover {
         pointer-events: none;
     }
 
-    /* Subpages: body is a flex column so #bottomBar is pushed to the true page bottom */
+    body::before {
+        display: none;
+    }
+
+    body:not(.landing-page) #chumBtn,
+    body:not(.landing-page) .glitch-layer,
+    body:not(.landing-page) .fish-layer {
+        display: none;
+    }
+
+    /* Subpages: body is a flex column so #bottomBar is pushed to the true page bottom.
+       Background goes on a fixed ::before so it never gaps at the bottom (iOS-safe). */
     body:not(.landing-page) {
         display: flex;
         flex-direction: column;
-        min-height: 100vh;
+        min-height: 100dvh;
+        background: transparent;
+    }
+    body:not(.landing-page)::before {
+        display: block;
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100dvh;
+        background-color: var(--bg-color);
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center bottom;
+        z-index: -1;
+        pointer-events: none;
     }
     body:not(.landing-page) .container {
         flex: 1;
@@ -646,24 +680,32 @@ body.landing-page .radio-play:hover {
     }
     /* Mobile: the homepage background (Salton Sea aerial + time-of-day overlay) is
        used across the whole site, shifted left to show more of the water edge. */
-    body.landing-page,
-    body.about-page {
-        background-image: linear-gradient(var(--tod-overlay), var(--tod-overlay)), url('img/VOSS_BOTTLE_EXTRA_WIDE.webp');
+    body.landing-page {
+        background-image: linear-gradient(var(--tod-overlay), var(--tod-overlay)), url('img/KDEZ_MAIN_VERTICAL_1.webp');
         background-size: cover;
         background-position: center bottom;
         background-attachment: scroll;
     }
-    body.donate-page {
-        background-image: linear-gradient(var(--tod-overlay), var(--tod-overlay)), url('img/KDEZ_Tower_Extra_Wide.webp');
-        background-size: cover;
+    body.about-page { background-image: none; }
+    body.about-page::before {
+        background-image: linear-gradient(var(--tod-overlay), var(--tod-overlay)), url('img/KDEZ_VOSS_VERTICAL_WIDE.webp');
         background-position: center bottom;
-        background-attachment: scroll;
-    }
-    body.stay-in-touch-page {
-        background-image: linear-gradient(var(--tod-overlay), var(--tod-overlay)), url('img/VOSS_BOTTLE_EXTRA_WIDE.webp');
+        background-repeat: no-repeat;
         background-size: cover;
-        background-position: center;
-        background-attachment: scroll;
+    }
+    body.donate-page { background-image: none; }
+    body.donate-page::before {
+        background-image: linear-gradient(var(--tod-overlay), var(--tod-overlay)), url('img/KDEZ_Tower_Vertical_Expanded.webp');
+        background-position: center bottom;
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+    body.stay-in-touch-page { background-image: none; }
+    body.stay-in-touch-page::before {
+        background-image: linear-gradient(var(--tod-overlay), var(--tod-overlay)), url('img/KDEZ_SLABS_VERTICAL.webp');
+        background-position: center bottom;
+        background-repeat: no-repeat;
+        background-size: cover;
     }
     .content-wrapper {
         flex-direction: column;
@@ -675,11 +717,12 @@ body.landing-page .radio-play:hover {
         gap: 1rem;
         order: 2; /* nav sits below the content, full width */
     }
-    .chaotic-menu .menu-item:first-child {
-        transform: translateX(-20px);
-    }
-    .chaotic-menu .menu-item:nth-child(2) {
-        margin-top: 2rem;
+    /* Cap nav lines on mobile so they don't bleed off-screen */
+    .has-line::before,
+    .has-line-bottom::after,
+    .has-lines-tb::before,
+    .has-lines-tb::after {
+        right: -10px;
     }
     .content-area {
         width: 100%;
@@ -701,33 +744,53 @@ body.landing-page .radio-play:hover {
         margin-top: 0;
     }
     body:not(.landing-page) .hero-text {
-        align-items: flex-end;
+        align-items: center;
         width: 100%;
+        padding-right: 0;
     }
     #bottomBar {
-        position: static;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0.75rem 1.25rem 1.25rem;
-    }
-    body.landing-page #bottomBar {
         position: fixed;
         bottom: 0;
         left: 0;
         right: 0;
         z-index: 200;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 1.25rem 0.75rem;
+    }
+    body:not(.landing-page) #bottomBar {
+        justify-content: flex-end;
     }
     #chumBtn {
-        position: static;
-        margin: 0;
-        padding: 0.3rem 0.9rem;
-        font-size: 1rem;
-        height: auto;
-        width: auto;
+        position: relative;
+        left: auto;
+        bottom: auto;
+        width: 72px;
+        height: 54px;
+        padding: 0;
+        background: transparent;
+        border: 0;
+        color: var(--text-color);
         align-self: center;
         order: -1;
+    }
+    #chumBtn .chum-bucket { display: block; width: 100%; height: 100%; position: relative; z-index: 2; }
+    #chumBtn .chum-body { fill: var(--bg-color); }
+    #chumBtn .chum-label {
+        display: block;
+        position: absolute;
+        left: 19%;
+        right: 19%;
+        top: 55%;
+        transform: translateY(-50%);
+        text-align: center;
+        color: var(--text-color);
+        font-size: 8px;
+        letter-spacing: 0;
+        pointer-events: none;
+        z-index: 2;
     }
     #socialBar {
         position: static;
@@ -742,9 +805,10 @@ body.landing-page .radio-play:hover {
     body.landing-page .container {
         height: 100dvh;
         min-height: unset;
-        padding-top: 0;
+        padding-top: 6rem;
+        padding-bottom: 5rem;
         top: 0;
-        justify-content: center;
+        justify-content: flex-start;
         align-items: center;
         gap: 0.5rem;
         overflow: hidden;
@@ -761,32 +825,41 @@ body.landing-page .radio-play:hover {
     }
     body.landing-page .content-area {
         width: auto;
-        margin-left: -2rem;
+        margin-left: 0;
     }
     .text-content {
         padding: 1.5rem;
-        font-size: 1rem;
+        font-size: 0.8rem;
         margin-top: 1rem;
     }
+    .text-content.player-content {
+        padding: 0;
+        margin: 0;
+    }
+    .radio-player {
+        min-height: unset;
+    }
+    body:not(.landing-page) .text-content {
+        margin-left: 1rem;
+        margin-right: 1rem;
+    }
     .yellow-scratch {
-        font-size: 2.2rem;
+        font-size: 3.6rem;
         transform: translateY(10px) translateX(-10px) rotate(-3deg);
     }
     .black-scratch {
-        font-size: 3rem;
+        font-size: 5rem;
+        margin-top: -20px;
     }
     
-    /* Make menu smaller on mobile */
-    .size-l { font-size: 1.6rem; }
-    .size-xl { font-size: 2.8rem; }
-    .size-m { font-size: 1.4rem; }
-    
-    .offset-2 { margin-top: 1rem; }
-
     /* Shrink the absolute logo on mobile */
     a[href="index.html"] {
         top: 1rem !important;
         left: 1rem !important;
+    }
+    body.landing-page a[href="index.html"] {
+        left: 50% !important;
+        transform: translateX(-50%);
     }
     a[href="index.html"] img {
         max-width: 140px !important;

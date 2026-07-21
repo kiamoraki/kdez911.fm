@@ -225,8 +225,11 @@
         readBgPos();
         window.addEventListener('resize', readBgPos);
 
-        function makeMask(src, invert) {
-            var BG_W = 3008, BG_H = 2005, MASK_W = 600, MASK_H = 400;
+        function makeMask(src, invert, opts) {
+            var BG_W   = (opts && opts.bgW) || 3008;
+            var BG_H   = (opts && opts.bgH) || 2005;
+            var MASK_W = (opts && opts.mW)  || 600;
+            var MASK_H = (opts && opts.mH)  || 400;
             var data = null, inside = [], ready = false, cbs = [];
             function rand(a, b) { return Math.random() * (b - a) + a; }
             function mapping() {
@@ -293,9 +296,11 @@
             };
         }
 
-        var _maskSrc = 'img/KDEZ_MAIN_HORIZONTAL-mask.png';
-        var water = makeMask(_maskSrc, false);   // opaque black = fish zone
-        var gifMask = makeMask(_maskSrc, false); // opaque black = rainbow pixel zone
+        var _mobile = window.matchMedia('(max-width: 768px)').matches;
+        var _maskSrc  = _mobile ? 'img/KDEZ_MAIN_VERTICAL_1-mask.svg' : 'img/KDEZ_MAIN_HORIZONTAL-mask.png';
+        var _maskOpts = _mobile ? { bgW: 1900, bgH: 3578, mW: 200, mH: 376 } : {};
+        var water   = makeMask(_maskSrc, false, _maskOpts); // opaque black = fish zone
+        var gifMask = makeMask(_maskSrc, false, _maskOpts); // opaque black = rainbow pixel zone
 
         /* Rainbow glitch (land area, never water); the field grows very gradually
            over hours and persists across navigation. */
