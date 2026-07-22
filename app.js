@@ -224,6 +224,10 @@
         }
         readBgPos();
         window.addEventListener('resize', readBgPos);
+        // Re-read after SPA navigation: subpages use different background-position
+        // values (e.g. center bottom), so bgPosX/Y must be refreshed when the body
+        // class changes or the fish-zone mapping will use the wrong offset.
+        window.addEventListener('kdez:nav-swapped', readBgPos);
 
         function makeMask(src, invert, opts) {
             var BG_W   = (opts && opts.bgW) || 3008;
@@ -954,6 +958,124 @@
             clipLines();
         });
         window.addEventListener('kdez:nav-swapped', function () { clipLines(); });
+    }
+
+    if (document.readyState !== 'loading') setup();
+    else document.addEventListener('DOMContentLoaded', setup);
+})();
+
+// Position subpage content boxes on desktop.
+// Centers the content box (not the hero+content block) in the viewport.
+// The donate page is the reference: its centered content-top anchors all pages.
+// Hero text floats above each content box at a fixed gap.
+(function () {
+    var referenceContentH = 0;
+
+    function positionContent() {
+        if (window.innerWidth <= 768) return;
+        if (document.body.classList.contains('landing-page')) return;
+
+        var container = document.querySelector('.container');
+        if (!container) return;
+
+        var hero        = container.querySelector('.hero-text');
+        var contentArea = container.querySelector('.content-area');
+        var textContent = contentArea ? contentArea.querySelector('.text-content') : null;
+        var socialBar   = document.getElementById('socialBar');
+        if (!hero || !contentArea) return;
+
+        // Reset any width overrides from a previous run so we measure natural sizes
+        if (textContent) textContent.style.maxWidth = '';
+        container.style.gridTemplateColumns = '';
+
+        var rem       = parseFloat(getComputedStyle(document.documentElement).fontSize);
+        var viewportH = window.innerHeight;
+        var heroH     = hero.offsetHeight;
+        var contentH  = contentArea.offsetHeight;
+        var gap       = rem;
+
+        // Donate page is the canonical reference; otherwise track the tallest seen
+        if (document.body.classList.contains('donate-page') || contentH > referenceContentH) {
+            referenceContentH = contentH;
+        }
+
+        var socialH         = socialBar ? socialBar.offsetHeight : 40;
+        var bottomClearance = socialH + rem * 1.5 + 20;
+
+        var refH      = referenceContentH || contentH;
+        var maxBottom = viewportH - bottomClearance;
+
+        // Center the content box using the reference (longest) height
+        var contentTop = Math.round((viewportH - refH) / 2);
+
+        // PRIORITY 1 (hard): content bottom must clear the social bar — slide up if needed
+        if (contentTop + contentH > maxBottom) {
+            contentTop = maxBottom - contentH;
+        }
+
+        // Hero floats above the content box
+        var heroTop = contentTop - heroH - gap;
+
+        // Logo clearance (soft): only apply if it won't push content back below the fold
+        var logoClear = Math.round(rem * 10);
+        if (heroTop < logoClear) {
+            var clampedContentTop = logoClear + heroH + gap;
+            if (clampedContentTop + contentH <= maxBottom) {
+                heroTop    = logoClear;
+                contentTop = clampedContentTop;
+            }
+        }
+
+        // Hard floor: hero must never be clipped above the viewport
+        heroTop = Math.max(heroTop, 0);
+
+        // After all vertical constraints, check if the reference (tallest) content overflows.
+        // Use referenceContentH — not contentH — for the ratio so every page computes the
+        // same neededW and column width, keeping the text-box left edge consistent.
+        var row1H      = Math.round(heroTop + heroH + gap);
+        var availableH = viewportH - row1H - bottomClearance;
+
+        if (referenceContentH > availableH && textContent) {
+            var currentW = textContent.offsetWidth;
+            var col1W    = Math.round(rem * 2) + 10;
+            var colPadR  = Math.round(rem * 6.5);
+            var maxW     = window.innerWidth - col1W - 250 - colPadR; // leave 250px min for nav
+            var neededW  = Math.min(Math.ceil(currentW * (referenceContentH / availableH) * 1.05), maxW);
+
+            if (neededW > currentW) {
+                textContent.style.maxWidth = neededW + 'px';
+                container.style.gridTemplateColumns =
+                    'calc(2rem + 10px) 1fr calc(' + neededW + 'px + 6.5rem)';
+                contentH = contentArea.offsetHeight; // force reflow → read updated height
+            }
+        }
+
+        // Row-1 height = heroTop + heroH + gap so content (row 2) always starts
+        // strictly below the hero text
+        container.style.gridTemplateRows = row1H + 'px auto';
+    }
+
+    function positionPlayer() {
+        if (window.innerWidth <= 768) return;
+        if (!document.body.classList.contains('landing-page')) return;
+
+        var container   = document.querySelector('.container');
+        var contentArea = container ? container.querySelector('.content-area') : null;
+        if (!container || !contentArea) return;
+
+        var topOffset = Math.max(0, Math.round((window.innerHeight - contentArea.offsetHeight) / 2));
+        container.style.gridTemplateRows = topOffset + 'px auto';
+    }
+
+    function setup() {
+        requestAnimationFrame(positionContent);
+        requestAnimationFrame(positionPlayer);
+        window.addEventListener('resize', positionContent);
+        window.addEventListener('resize', positionPlayer);
+        window.addEventListener('kdez:nav-swapped', function () {
+            requestAnimationFrame(positionContent);
+            requestAnimationFrame(positionPlayer);
+        });
     }
 
     if (document.readyState !== 'loading') setup();

@@ -356,7 +356,6 @@ body.stay-in-touch-page {
     }
     body.landing-page .container {
         grid-template-columns: calc(2rem + 10px) 1fr calc(400px + 6.5rem);
-        align-content: center;
         padding-top: 0;
     }
     body.landing-page .hero-text {
@@ -375,6 +374,7 @@ body.stay-in-touch-page {
     body:not(.landing-page) .container {
         padding-top: 0;
         align-content: start;
+        grid-template-rows: 65vh auto;
     }
     body:not(.landing-page) .container > .hero-text {
         align-items: flex-start;
@@ -387,7 +387,6 @@ body.stay-in-touch-page {
     }
     body:not(.landing-page) .content-area .text-content {
         width: auto;
-        font-size: 0.75rem;
         line-height: 1.45;
         padding: 1.25rem 1.5rem;
         border-width: 2px;
@@ -445,7 +444,7 @@ body.stay-in-touch-page {
 
 .text-content {
     font-family: 'Courier Prime', monospace;
-    font-size: 0.65rem;
+    font-size: 0.8rem;
     max-width: 600px;
     line-height: 1.6;
     background: rgba(226, 200, 152, 0.75);
@@ -829,7 +828,6 @@ body.landing-page .radio-play:hover {
     }
     .text-content {
         padding: 1.5rem;
-        font-size: 0.8rem;
         margin-top: 1rem;
     }
     .text-content.player-content {
@@ -1170,6 +1168,15 @@ body.landing-page a[href="index.html"] img {
 
 @media (max-width: 768px) {
     .page-caption { display: none; }
+}
+
+@media (min-width: 1440px) {
+    .text-content {
+        font-size: 1rem;
+    }
+    .text-content p {
+        margin-bottom: 2rem;
+    }
 }
 
 @media (orientation: portrait) {
