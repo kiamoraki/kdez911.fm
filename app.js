@@ -884,15 +884,17 @@
 
             function setStop(prop, lineY) {
                 var dy = lineY - cy;
+                var val;
                 if (Math.abs(dy) < r) {
                     var ix = cx - Math.sqrt(r * r - dy * dy);
                     var extend = 8 + (Math.abs(dy) / r) * 38;
-                    stops[prop] = (ir.right - ix - extend).toFixed(1) + 'px';
-                    item.style.setProperty(prop, stops[prop]);
+                    val = (ir.right - ix - extend).toFixed(1) + 'px';
                 } else {
-                    stops[prop] = null;
-                    item.style.removeProperty(prop);
+                    // Line misses the circle — stop at its left edge
+                    val = (ir.right - br.left).toFixed(1) + 'px';
                 }
+                stops[prop] = val;
+                item.style.setProperty(prop, val);
             }
 
             if (item.classList.contains('has-line'))
@@ -924,21 +926,12 @@
         var btn = document.getElementById('radioToggle');
 
         if (!btn) {
-            // Subpages: stop lines at the left edge of the text-content box.
-            var tc = document.querySelector('.content-area .text-content');
-            if (!tc) return;
-            var stopX = tc.getBoundingClientRect().left;
+            // Subpages: clear any inline stops so lines use the -100vw CSS fallback;
+            // contain:paint on .chaotic-menu clips them exactly at the column edge.
             document.querySelectorAll('.menu-item').forEach(function (item) {
-                var ir = item.getBoundingClientRect();
-                var val = (ir.right - stopX).toFixed(1) + 'px';
-                if (item.classList.contains('has-line'))
-                    item.style.setProperty('--line-stop-mid',    val);
-                if (item.classList.contains('has-line-bottom'))
-                    item.style.setProperty('--line-stop-bottom', val);
-                if (item.classList.contains('has-lines-tb')) {
-                    item.style.setProperty('--line-stop-top',    val);
-                    item.style.setProperty('--line-stop-bottom', val);
-                }
+                item.style.removeProperty('--line-stop-mid');
+                item.style.removeProperty('--line-stop-top');
+                item.style.removeProperty('--line-stop-bottom');
             });
             return;
         }
@@ -965,116 +958,109 @@
 })();
 
 // Position subpage content boxes on desktop.
-// Centers the content box (not the hero+content block) in the viewport.
-// The donate page is the reference: its centered content-top anchors all pages.
-// Hero text floats above each content box at a fixed gap.
+// Donate's content box is vertically centered in the zone; all pages share that row-1 height.
+// Donate's height is pre-fetched at startup so the correct position is known before the
+// user navigates to donate — no jump when switching pages.
 (function () {
     var referenceContentH = 0;
+    var donateHTML        = null; // cached so resize re-measurement skips the network
+
+    function measureFromHTML(html) {
+        var rem   = parseFloat(getComputedStyle(document.documentElement).fontSize);
+        var colW  = Math.round(window.innerWidth / 2);
+        var doc   = new DOMParser().parseFromString(html, 'text/html');
+        var src   = doc.querySelector('.content-area');
+        if (!src) return;
+        var probe = document.createElement('div');
+        probe.className = 'content-column';
+        probe.style.cssText = 'position:fixed;top:0;left:-9999px;width:' + colW +
+            'px;visibility:hidden;pointer-events:none;z-index:-1';
+        probe.appendChild(src.cloneNode(true));
+        document.body.appendChild(probe);
+        referenceContentH = probe.querySelector('.content-area').offsetHeight;
+        document.body.removeChild(probe);
+    }
+
+    function ensureDonateRef(done) {
+        if (document.body.classList.contains('donate-page')) {
+            var ca = document.querySelector('.content-column .content-area');
+            if (ca) referenceContentH = ca.offsetHeight;
+            done();
+            return;
+        }
+        if (donateHTML) {
+            measureFromHTML(donateHTML);
+            done();
+            return;
+        }
+        fetch('donate.html')
+            .then(function (r) { return r.text(); })
+            .then(function (html) {
+                donateHTML = html;
+                measureFromHTML(html);
+                done();
+            })
+            .catch(done);
+    }
 
     function positionContent() {
         if (window.innerWidth <= 768) return;
         if (document.body.classList.contains('landing-page')) return;
 
-        var container = document.querySelector('.container');
-        if (!container) return;
+        var container  = document.querySelector('.container');
+        var contentCol = container ? container.querySelector('.content-column') : null;
+        if (!container || !contentCol) return;
 
-        var hero        = container.querySelector('.hero-text');
-        var contentArea = container.querySelector('.content-area');
+        var contentArea = contentCol.querySelector('.content-area');
         var textContent = contentArea ? contentArea.querySelector('.text-content') : null;
         var socialBar   = document.getElementById('socialBar');
-        if (!hero || !contentArea) return;
+        if (!contentArea) return;
 
-        // Reset any width overrides from a previous run so we measure natural sizes
-        if (textContent) textContent.style.maxWidth = '';
         container.style.gridTemplateColumns = '';
 
         var rem       = parseFloat(getComputedStyle(document.documentElement).fontSize);
         var viewportH = window.innerHeight;
-        var heroH     = hero.offsetHeight;
         var contentH  = contentArea.offsetHeight;
-        var gap       = rem;
 
-        // Donate page is the canonical reference; otherwise track the tallest seen
-        if (document.body.classList.contains('donate-page') || contentH > referenceContentH) {
-            referenceContentH = contentH;
-        }
+        // Live donate measurement is more accurate than the probe; keep it fresh
+        if (document.body.classList.contains('donate-page')) referenceContentH = contentH;
+        // Fallback: fetch may not have completed yet
+        if (referenceContentH === 0) referenceContentH = contentH;
 
-        var socialH         = socialBar ? socialBar.offsetHeight : 40;
-        var bottomClearance = socialH + rem * 1.5 + 20;
+        var topPad  = Math.round(rem * 7.8125);
+        var socialH = socialBar ? socialBar.offsetHeight : Math.round(rem * 4.25);
+        var zoneH   = viewportH - topPad - socialH;
 
-        var refH      = referenceContentH || contentH;
-        var maxBottom = viewportH - bottomClearance;
+        contentCol.style.paddingBottom = socialH + 'px';
 
-        // Center the content box using the reference (longest) height
-        var contentTop = Math.round((viewportH - refH) / 2);
+        var row1H      = Math.max(0, Math.round((zoneH - referenceContentH) / 2));
+        var availableH = zoneH - row1H;
 
-        // PRIORITY 1 (hard): content bottom must clear the social bar — slide up if needed
-        if (contentTop + contentH > maxBottom) {
-            contentTop = maxBottom - contentH;
-        }
-
-        // Hero floats above the content box
-        var heroTop = contentTop - heroH - gap;
-
-        // Logo clearance (soft): only apply if it won't push content back below the fold
-        var logoClear = Math.round(rem * 10);
-        if (heroTop < logoClear) {
-            var clampedContentTop = logoClear + heroH + gap;
-            if (clampedContentTop + contentH <= maxBottom) {
-                heroTop    = logoClear;
-                contentTop = clampedContentTop;
-            }
-        }
-
-        // Hard floor: hero must never be clipped above the viewport
-        heroTop = Math.max(heroTop, 0);
-
-        // After all vertical constraints, check if the reference (tallest) content overflows.
-        // Use referenceContentH — not contentH — for the ratio so every page computes the
-        // same neededW and column width, keeping the text-box left edge consistent.
-        var row1H      = Math.round(heroTop + heroH + gap);
-        var availableH = viewportH - row1H - bottomClearance;
-
-        if (referenceContentH > availableH && textContent) {
+        if (contentH > availableH && textContent) {
             var currentW = textContent.offsetWidth;
-            var col1W    = Math.round(rem * 2) + 10;
-            var colPadR  = Math.round(rem * 6.5);
-            var maxW     = window.innerWidth - col1W - 250 - colPadR; // leave 250px min for nav
-            var neededW  = Math.min(Math.ceil(currentW * (referenceContentH / availableH) * 1.05), maxW);
+            var minNavW  = Math.round(rem * 15);
+            var maxContent = window.innerWidth - minNavW;
+            var neededW  = Math.min(Math.ceil(currentW * (contentH / availableH) * 1.05), maxContent);
 
             if (neededW > currentW) {
-                textContent.style.maxWidth = neededW + 'px';
-                container.style.gridTemplateColumns =
-                    'calc(2rem + 10px) 1fr calc(' + neededW + 'px + 6.5rem)';
-                contentH = contentArea.offsetHeight; // force reflow → read updated height
+                container.style.gridTemplateColumns = '1fr ' + (neededW / rem).toFixed(4) + 'rem';
             }
         }
 
-        // Row-1 height = heroTop + heroH + gap so content (row 2) always starts
-        // strictly below the hero text
-        container.style.gridTemplateRows = row1H + 'px auto';
-    }
-
-    function positionPlayer() {
-        if (window.innerWidth <= 768) return;
-        if (!document.body.classList.contains('landing-page')) return;
-
-        var container   = document.querySelector('.container');
-        var contentArea = container ? container.querySelector('.content-area') : null;
-        if (!container || !contentArea) return;
-
-        var topOffset = Math.max(0, Math.round((window.innerHeight - contentArea.offsetHeight) / 2));
-        container.style.gridTemplateRows = topOffset + 'px auto';
+        contentCol.style.gridTemplateRows = row1H + 'px auto';
     }
 
     function setup() {
-        requestAnimationFrame(positionContent);
-        requestAnimationFrame(positionPlayer);
-        window.addEventListener('resize', positionContent);
-        window.addEventListener('resize', positionPlayer);
+        ensureDonateRef(function () {
+            requestAnimationFrame(positionContent);
+        });
+        window.addEventListener('resize', function () {
+            // Re-measure from cached HTML so column-width changes update the reference
+            if (donateHTML) measureFromHTML(donateHTML);
+            positionContent();
+        });
         window.addEventListener('kdez:nav-swapped', function () {
             requestAnimationFrame(positionContent);
-            requestAnimationFrame(positionPlayer);
         });
     }
 

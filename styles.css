@@ -346,91 +346,108 @@ body.stay-in-touch-page {
    Row 1 auto-sizes to the hero, so the nav and box land at the same positions
    relative to the hero on every page. */
 @media (min-width: 769px) {
+    /* ── Two-column grid: nav | content zone ─────────────────────── */
     .container {
         display: grid;
-        grid-template-columns: calc(2rem + 10px) 1fr calc(600px + 6.5rem); /* col1: logo gutter | col2: nav | col3: hero+content */
-        grid-template-rows: 10rem auto;
+        max-width: none;
+        grid-template-columns: 1fr 1fr; /* col1: nav  |  col2: content zone */
         align-content: start;
-        top: 0; /* override the base shift */
-        padding-top: 10.5rem; /* begin below the logo (top 2rem + ~125px tall) */
+        top: 0;
+        padding-top: 0;
     }
     body.landing-page .container {
-        grid-template-columns: calc(2rem + 10px) 1fr calc(400px + 6.5rem);
         padding-top: 0;
+        min-height: 100vh;
+        grid-template-rows: 1fr auto 1fr; /* equal space above/below the player */
     }
     body.landing-page .hero-text {
         display: none;
     }
-    body.landing-page .content-area {
-        margin-top: 0;
-    }
-    .container > .hero-text {
-        grid-column: 3;
-        grid-row: 1;
-        align-items: flex-end;
-        margin: 0;
-        padding-right: 4rem;
-    }
-    body:not(.landing-page) .container {
-        padding-top: 0;
-        align-content: start;
-        grid-template-rows: 65vh auto;
-    }
-    body:not(.landing-page) .container > .hero-text {
-        align-items: flex-start;
-        align-self: end;
-        padding-right: 6.5rem;
-    }
-    body:not(.landing-page) .container > .content-area {
+    body.landing-page .container > .content-area {
+        grid-column: 2;
         grid-row: 2;
         margin-top: 0;
+        align-self: center;
+        position: relative;
+        z-index: 60;
     }
-    body:not(.landing-page) .content-area .text-content {
-        width: auto;
-        line-height: 1.45;
-        padding: 1.25rem 1.5rem;
-        border-width: 2px;
-        max-height: calc(100vh - 160px);
-        overflow-y: auto;
-        background: rgba(226, 200, 152, 0.88);
+    .content-area .player-content {
+        margin-top: 0;
     }
-    body:not(.landing-page) .content-area .text-content p {
-        margin-bottom: 0.5rem;
-    }
+
+    /* ── Col 1: chaotic nav, vertically centered ─────────────────── */
     .container > .chaotic-menu {
-        grid-column: 2;
+        grid-column: 1;
         grid-row: 1 / -1;
         position: sticky;
         height: 100vh;
         width: 100%;
         margin: 0;
-        margin-top: -40px;
+        margin-top: -2.5rem;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         z-index: 50;
+    }
+    /* Clip lines at the column edge on subpages; landing page lines reach the play button */
+    body:not(.landing-page) .container > .chaotic-menu {
         contain: paint;
     }
-    .container > .content-area {
-        grid-column: 3;
+
+    /* ── Col 2: padded content zone ──────────────────────────────── */
+    .content-column {
+        grid-column: 2;
+        grid-row: 1;
+        display: grid;
+        grid-template-rows: auto auto;
+        padding-top: 7.8125rem;  /* mini player height — zone starts below the player */
+        min-height: 100vh;
+    }
+    .content-column > .hero-text {
+        grid-row: 1;
+        align-self: end; /* hero floats to the bottom of its row, just above the text box */
+        margin: 0;
+    }
+    body:not(.landing-page) .content-column > .hero-text {
+        align-items: flex-start;
+    }
+    .content-column > .content-area {
         grid-row: 2;
-        margin-top: 1rem;   /* box top 1rem above the nav's top */
+        margin-top: 0;
         width: auto;
         align-self: start;
+        align-items: flex-start;
         position: relative;
-        z-index: 60; /* above the nav (z-index: 50) so text boxes cover the nav lines */
+        z-index: 60;
     }
-    .content-area .player-content {
-        margin-top: 0;
-    }
+
+    /* Subpage text-content */
     .content-area .text-content {
-        width: 600px;
-        max-width: 600px;
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+    }
+    body:not(.landing-page) .content-area .text-content {
+        width: auto;
+        min-width: 0;
+        max-width: 800px;
+        line-height: 1.45;
+        padding: 2.5rem;
+        border-width: 2px;
+        max-height: calc(100vh - 7.8125rem - 5rem);
+        overflow-y: auto;
+        background: rgba(226, 200, 152, 0.88);
+    }
+    body:not(.landing-page) .content-area .text-content p {
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 0.5rem;
     }
     .yellow-scratch,
     .black-scratch {
-        white-space: nowrap; /* one line so the hero blocks are equal height */
+        white-space: nowrap;
     }
 }
 
@@ -445,7 +462,7 @@ body.stay-in-touch-page {
 .text-content {
     font-family: 'Courier Prime', monospace;
     font-size: 0.8rem;
-    max-width: 600px;
+    max-width: 37.5rem;
     line-height: 1.6;
     background: rgba(226, 200, 152, 0.75);
     padding: 2rem;
@@ -531,7 +548,6 @@ body.stay-in-touch-page {
 
 body.landing-page .radio-play {
     transform: none;
-    opacity: 0.92;
 }
 
 body.landing-page .radio-play:hover {
@@ -567,7 +583,7 @@ body.landing-page .radio-play:hover {
     display: flex;
     align-items: center;
     gap: 1rem;
-    height: 125px; /* = the 250px desktop logo's height, so it centers vertically with the logo */
+    height: 7.8125rem; /* = the 250px desktop logo's height, so it centers vertically with the logo */
     padding: 0;
     background: transparent;
     border: 0;
@@ -578,8 +594,8 @@ body.landing-page .radio-play:hover {
 }
 
 .radio-play--mini {
-    width: 70px;
-    height: 70px;
+    width: 4.375rem;
+    height: 4.375rem;
     transform: none; /* override the big player's upward nudge */
 }
 
@@ -588,7 +604,7 @@ body.landing-page .radio-play:hover {
 }
 
 #miniPlayer .radio-volume-row {
-    width: 150px;
+    width: 9.375rem;
     gap: 3rem; /* slider's left margin (space between the volume icon and the slider) */
 }
 
@@ -1061,8 +1077,11 @@ body.landing-page a[href="index.html"] img {
 @media (min-width: 769px) {
     #socialBar {
         position: fixed;
-        bottom: 1.5rem;
-        right: 1.5rem;
+        bottom: 0;
+        left: 50vw;
+        right: 0;
+        padding: 0.75rem 1.5rem;
+        justify-content: flex-end;
         z-index: 200;
     }
 }
@@ -1171,6 +1190,9 @@ body.landing-page a[href="index.html"] img {
 }
 
 @media (min-width: 1440px) {
+    html {
+        font-size: 125%; /* 16px → 20px — scales all rem values */
+    }
     .text-content {
         font-size: 1rem;
     }
